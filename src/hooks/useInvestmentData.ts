@@ -25,7 +25,7 @@ export const useInvestmentData = () => {
     return investmentData[key] || [];
   }, [investmentData]);
 
-  const addOrUpdateRecord = useCallback(async (year: number, month: number, day: number, amount: number, deposit?: number, withdrawal?: number) => {
+  const addOrUpdateRecord = useCallback(async (year: number, month: number, day: number, amount: number, deposit?: number, withdrawal?: number, timestamp?: number) => {
     if (!userId || !userDocRef) return;
 
     const key = getMonthKey(year, month);
@@ -36,7 +36,7 @@ export const useInvestmentData = () => {
     const recordData: DailyRecord = {
       date: dateString,
       totalAmount: amount,
-      timestamp: Date.now(),
+      timestamp: timestamp || Date.now(),
     };
     
     if (deposit !== undefined && deposit > 0) {
@@ -47,7 +47,18 @@ export const useInvestmentData = () => {
       recordData.withdrawal = withdrawal;
     }
     
-    const newRecords = [...monthRecords, recordData];
+    let newRecords: DailyRecord[];
+    
+    if (timestamp !== undefined) {
+      newRecords = monthRecords.map(r => {
+        if (r.date === dateString && r.timestamp === timestamp) {
+          return recordData;
+        }
+        return r;
+      });
+    } else {
+      newRecords = [...monthRecords, recordData];
+    }
     
     newRecords.sort((a, b) => {
       const dateCompare = a.date.localeCompare(b.date);
