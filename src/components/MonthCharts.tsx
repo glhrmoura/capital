@@ -94,6 +94,26 @@ const isWorkingDay = (year: number, month: number, day: number): boolean => {
   return dayOfWeek >= 1 && dayOfWeek <= 5;
 };
 
+const getWorkingDaysUntilToday = (year: number, month: number): number => {
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+  const currentDay = today.getDate();
+  
+  if (year !== currentYear || month !== currentMonth) {
+    return getWorkingDaysInMonth(year, month);
+  }
+  
+  let workingDays = 0;
+  for (let day = 1; day <= currentDay; day++) {
+    if (isWorkingDay(year, month, day)) {
+      workingDays++;
+    }
+  }
+  
+  return workingDays;
+};
+
 export const MonthCharts = ({ records, year, month }: MonthChartsProps) => {
   const chartData = useMemo(() => {
     const sorted = [...records].sort((a, b) => {
@@ -183,6 +203,24 @@ export const MonthCharts = ({ records, year, month }: MonthChartsProps) => {
     });
   }, [chartData, year, month]);
 
+  const totalYield = useMemo(() => {
+    return chartData.length > 1 
+      ? chartData.slice(1).reduce((sum, d) => sum + d.rendimento, 0)
+      : 0;
+  }, [chartData]);
+
+  const workingDaysPassed = useMemo(() => {
+    const uniqueDays = new Set(chartData.map(d => parseInt(d.day)));
+    return Array.from(uniqueDays).filter(day => isWorkingDay(year, month, day)).length;
+  }, [chartData, year, month]);
+
+  const totalWorkingDays = getWorkingDaysInMonth(year, month);
+  const workingDaysUntilToday = getWorkingDaysUntilToday(year, month);
+  const remainingWorkingDays = Math.max(0, totalWorkingDays - workingDaysUntilToday);
+  const currentDailyAverage = workingDaysUntilToday > 0 ? totalYield / workingDaysUntilToday : 0;
+  const projectedAdditionalYield = currentDailyAverage * remainingWorkingDays;
+  const projectedTotalYield = totalYield + projectedAdditionalYield;
+
   return (
     <div className="space-y-4">
       {/* Stats Summary */}
@@ -192,27 +230,24 @@ export const MonthCharts = ({ records, year, month }: MonthChartsProps) => {
         </h3>
         <div className="grid grid-cols-2 gap-4">
           <StatItem
-            label="Maior ganho"
-            value={Math.max(...chartData.map(d => d.rendimento))}
+            label="Dias úteis restantes"
+            value={remainingWorkingDays}
+            isCount
           />
           <StatItem
             label="Rendimento total"
-            value={chartData.length > 1 
-              ? chartData.slice(1).reduce((sum, d) => sum + d.rendimento, 0)
-              : 0
-            }
+            value={totalYield}
           />
           <StatItem
             label="Média diária"
-            value={chartData.length > 1 
-              ? chartData.slice(1).reduce((sum, d) => sum + d.rendimento, 0) / getWorkingDaysInMonth(year, month)
+            value={workingDaysUntilToday > 0 
+              ? totalYield / workingDaysUntilToday
               : 0
             }
           />
           <StatItem
-            label="Dias registrados"
-            value={chartData.length}
-            isCount
+            label="Previsão até fim do mês"
+            value={projectedTotalYield}
           />
         </div>
       </div>
