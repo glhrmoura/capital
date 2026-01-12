@@ -3,7 +3,7 @@ import { Trash2, Pencil, Check, X, TrendingUp, TrendingDown, Minus } from 'lucid
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DailyRecord } from '@/types/investment';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from '@/utils/formatters';
 
 interface RecordsTableProps {
   records: DailyRecord[];
@@ -25,29 +25,109 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
       if (dateCompare !== 0) return dateCompare;
       return (a.timestamp || 0) - (b.timestamp || 0);
     });
+    
+    const firstAmountRecordIndex = sorted.findIndex(r => !(r.deposit || r.withdrawal));
+    
     return sorted.map((record, index) => {
-      if (index === 0) {
+      const isDepositOrWithdrawal = !!(record.deposit || record.withdrawal);
+      
+      if (isDepositOrWithdrawal) {
         return { ...record, dailyYield: 0 };
       }
       
-      const previousRecord = sorted[index - 1];
-      const totalVariation = record.totalAmount - previousRecord.totalAmount;
+      if (index === firstAmountRecordIndex) {
+        return { ...record, dailyYield: 0 };
+      }
+      
+      let previousAmountRecord: DailyRecord | null = null;
+      let searchIndex = index - 1;
+      
+      while (searchIndex >= 0) {
+        const candidate = sorted[searchIndex];
+        if (!(candidate.deposit || candidate.withdrawal)) {
+          previousAmountRecord = candidate;
+          break;
+        }
+        searchIndex--;
+      }
+      
+      if (!previousAmountRecord) {
+        return { ...record, dailyYield: 0 };
+      }
+      
+      const previousIndex = sorted.findIndex(r => 
+        r.date === previousAmountRecord.date && 
+        (r.timestamp || 0) === (previousAmountRecord.timestamp || 0)
+      );
+      
+      let totalDeposits = 0;
+      let totalWithdrawals = 0;
+      
+      for (let i = previousIndex + 1; i < index; i++) {
+        const intermediateRecord = sorted[i];
+        if (intermediateRecord.deposit) {
+          totalDeposits += intermediateRecord.deposit;
+        }
+        if (intermediateRecord.withdrawal) {
+          totalWithdrawals += intermediateRecord.withdrawal;
+        }
+      }
+      
       const deposit = record.deposit || 0;
       const withdrawal = record.withdrawal || 0;
-      const dailyYield = totalVariation - (deposit - withdrawal);
+      totalDeposits += deposit;
+      totalWithdrawals += withdrawal;
+      
+      const totalVariation = record.totalAmount - previousAmountRecord.totalAmount;
+      const dailyYield = totalVariation - (totalDeposits - totalWithdrawals);
       
       return { ...record, dailyYield };
     });
   }, [records]);
+
+  const getPreviousDayAmount = (day: number, currentRecord: DailyRecord): number => {
+    const sorted = [...records].sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) return dateCompare;
+      return (a.timestamp || 0) - (b.timestamp || 0);
+    });
+
+    const currentIndex = sorted.findIndex(r => 
+      r.date === currentRecord.date && (r.timestamp || 0) === (currentRecord.timestamp || 0)
+    );
+
+    if (currentIndex === 0) return 0;
+
+    const previousRecord = sorted[currentIndex - 1];
+    return previousRecord.totalAmount;
+  };
 
   const startEditing = (record: DailyRecord) => {
     const recordId = `${record.date}-${record.timestamp || 0}`;
     setEditingRecordId(recordId);
     const day = parseInt(record.date.split('-')[2]);
     setEditingDay(day);
-    setEditValue(record.totalAmount.toString().replace('.', ','));
-    setEditDeposit(record.deposit ? record.deposit.toString().replace('.', ',') : '');
-    setEditWithdrawal(record.withdrawal ? record.withdrawal.toString().replace('.', ',') : '');
+    
+    if (record.deposit || record.withdrawal) {
+      setEditValue('');
+      if (record.deposit) {
+        const depositStr = Math.round(record.deposit * 100).toString();
+        setEditDeposit(formatCurrencyInput(depositStr));
+      } else {
+        setEditDeposit('');
+      }
+      if (record.withdrawal) {
+        const withdrawalStr = Math.round(record.withdrawal * 100).toString();
+        setEditWithdrawal(formatCurrencyInput(withdrawalStr));
+      } else {
+        setEditWithdrawal('');
+      }
+    } else {
+      const amountStr = Math.round(record.totalAmount * 100).toString();
+      setEditValue(formatCurrencyInput(amountStr));
+      setEditDeposit('');
+      setEditWithdrawal('');
+    }
   };
 
   const cancelEditing = () => {
@@ -63,9 +143,22 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
       const record = recordsWithYield.find(r => `${r.date}-${r.timestamp || 0}` === editingRecordId);
       if (!record) return;
       
-      const numericAmount = parseFloat(editValue.replace(',', '.')) || 0;
-      const numericDeposit = editDeposit ? parseFloat(editDeposit.replace(',', '.')) : undefined;
-      const numericWithdrawal = editWithdrawal ? parseFloat(editWithdrawal.replace(',', '.')) : undefined;
+      const numericDeposit = editDeposit ? parseCurrencyInput(editDeposit) : undefined;
+      const numericWithdrawal = editWithdrawal ? parseCurrencyInput(editWithdrawal) : undefined;
+      
+      let numericAmount: number;
+      if (numericDeposit || numericWithdrawal) {
+        const previousAmount = getPreviousDayAmount(editingDay, record);
+        if (numericDeposit) {
+          numericAmount = previousAmount + numericDeposit;
+        } else if (numericWithdrawal) {
+          numericAmount = previousAmount - numericWithdrawal;
+        } else {
+          numericAmount = previousAmount;
+        }
+      } else {
+        numericAmount = parseCurrencyInput(editValue);
+      }
       
       if (!isNaN(numericAmount) && numericAmount >= 0) {
         onUpdate(editingDay, numericAmount, numericDeposit, numericWithdrawal, record.timestamp);
@@ -126,27 +219,73 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
                 <div className="flex-1">
                   {isEditing ? (
                     <div className="flex flex-col gap-2 w-full">
-                      <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground text-sm">R$</span>
-                        <Input
-                          type="text"
-                          inputMode="decimal"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          className="w-32 h-8"
-                          placeholder="Total"
-                          autoFocus
-                        />
-                      </div>
-                      <div className="flex items-center gap-2 text-xs">
-                        {record.deposit && (
-                          <span className="text-primary">Aporte: {formatCurrency(record.deposit)}</span>
-                        )}
-                        {record.withdrawal && (
-                          <span className="text-destructive">Saque: {formatCurrency(record.withdrawal)}</span>
-                        )}
-                      </div>
+                      {record.deposit || record.withdrawal ? (
+                        <>
+                          {record.deposit && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground text-sm text-primary">Aporte: R$</span>
+                              <Input
+                                type="text"
+                                inputMode="decimal"
+                                value={editDeposit}
+                                onChange={(e) => {
+                                  const formatted = formatCurrencyInput(e.target.value);
+                                  setEditDeposit(formatted);
+                                }}
+                                onKeyDown={handleKeyDown}
+                                className="w-32 h-8"
+                                placeholder="Valor do aporte"
+                                autoFocus
+                              />
+                            </div>
+                          )}
+                          {record.withdrawal && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground text-sm text-destructive">Saque: R$</span>
+                              <Input
+                                type="text"
+                                inputMode="decimal"
+                                value={editWithdrawal}
+                                onChange={(e) => {
+                                  const formatted = formatCurrencyInput(e.target.value);
+                                  setEditWithdrawal(formatted);
+                                }}
+                                onKeyDown={handleKeyDown}
+                                className="w-32 h-8"
+                                placeholder="Valor do saque"
+                                autoFocus
+                              />
+                            </div>
+                          )}
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Montante: {formatCurrency(
+                              (() => {
+                                const previousAmount = getPreviousDayAmount(day, record);
+                                const deposit = editDeposit ? parseCurrencyInput(editDeposit) : 0;
+                                const withdrawal = editWithdrawal ? parseCurrencyInput(editWithdrawal) : 0;
+                                return previousAmount + deposit - withdrawal;
+                              })()
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground text-sm">R$</span>
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            value={editValue}
+                            onChange={(e) => {
+                              const formatted = formatCurrencyInput(e.target.value);
+                              setEditValue(formatted);
+                            }}
+                            onKeyDown={handleKeyDown}
+                            className="w-32 h-8"
+                            placeholder="Total"
+                            autoFocus
+                          />
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="flex flex-col">
