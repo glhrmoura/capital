@@ -102,20 +102,48 @@ export const useInvestmentData = () => {
       return null;
     }
     
-    const sortedRecords = [...records].sort((a, b) => a.date.localeCompare(b.date));
-    const firstRecord = sortedRecords[0];
-    const lastRecord = sortedRecords[sortedRecords.length - 1];
+    const sortedRecords = [...records].sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) return dateCompare;
+      return (a.timestamp || 0) - (b.timestamp || 0);
+    });
+    
+    const amountRecords = sortedRecords.filter(r => !(r.deposit || r.withdrawal));
+    
+    if (amountRecords.length < 2) {
+      return null;
+    }
+    
+    const firstRecord = amountRecords[0];
+    const lastRecord = amountRecords[amountRecords.length - 1];
     
     const firstDay = parseInt(firstRecord.date.split('-')[2]);
     const lastDay = parseInt(lastRecord.date.split('-')[2]);
     
+    const firstRecordIndex = sortedRecords.findIndex(r => 
+      r.date === firstRecord.date && 
+      (r.timestamp || 0) === (firstRecord.timestamp || 0)
+    );
+    const lastRecordIndex = sortedRecords.findIndex(r => 
+      r.date === lastRecord.date && 
+      (r.timestamp || 0) === (lastRecord.timestamp || 0)
+    );
+    
+    let totalDeposits = 0;
+    let totalWithdrawals = 0;
+    
+    for (let i = firstRecordIndex + 1; i <= lastRecordIndex; i++) {
+      const record = sortedRecords[i];
+      if (record.deposit) {
+        totalDeposits += record.deposit;
+      }
+      if (record.withdrawal) {
+        totalWithdrawals += record.withdrawal;
+      }
+    }
+    
     const totalVariation = lastRecord.totalAmount - firstRecord.totalAmount;
-    
-    const totalDeposits = sortedRecords.reduce((sum, record) => sum + (record.deposit || 0), 0);
-    const totalWithdrawals = sortedRecords.reduce((sum, record) => sum + (record.withdrawal || 0), 0);
-    
-    const netMovements = totalDeposits - totalWithdrawals;
-    const realYield = totalVariation - netMovements;
+    const realYield = totalVariation - (totalDeposits - totalWithdrawals);
     
     return {
       yield: realYield,
