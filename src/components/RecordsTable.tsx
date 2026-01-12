@@ -97,11 +97,10 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
 
   return (
     <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-border">
         <h3 className="text-sm font-medium text-muted-foreground">
           Registros ({records.length} dias)
         </h3>
-        <span className="text-xs text-muted-foreground">Rend. Diário</span>
       </div>
       
       <div className="divide-y divide-border">
@@ -116,90 +115,89 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
           return (
             <div
               key={`${record.date}-${record.timestamp || 0}`}
-              className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors"
+              className="flex items-start justify-between px-4 py-3 hover:bg-muted/50 transition-colors"
             >
-              <div className="flex items-center gap-3 flex-1">
-                <span className="w-8 h-8 rounded-lg bg-primary/10 text-primary font-medium flex items-center justify-center text-sm shrink-0">
+              <div className="flex items-start gap-3 flex-1">
+                <span className="w-8 h-8 rounded-lg bg-primary/10 text-primary font-medium flex items-center justify-center text-sm shrink-0 mt-0.5">
                   {String(day).padStart(2, '0')}
                 </span>
                 
-                {isEditing ? (
-                  <div className="flex flex-col gap-2 w-full">
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground text-sm">R$</span>
-                      <Input
-                        type="text"
-                        inputMode="decimal"
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        className="w-32 h-8"
-                        placeholder="Total"
-                        autoFocus
-                      />
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      {record.deposit && (
-                        <span className="text-primary">Aporte: {formatCurrency(record.deposit)}</span>
-                      )}
-                      {record.withdrawal && (
-                        <span className="text-destructive">Saque: {formatCurrency(record.withdrawal)}</span>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col">
-                    <span className="font-medium text-foreground">
-                      {formatCurrency(record.totalAmount)}
-                    </span>
-                    {(record.deposit || record.withdrawal) && (
-                      <div className="flex items-center gap-2 text-xs mt-1">
+                <div className="flex-1">
+                  {isEditing ? (
+                    <div className="flex flex-col gap-2 w-full">
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground text-sm">R$</span>
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          className="w-32 h-8"
+                          placeholder="Total"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
                         {record.deposit && (
-                          <span className="text-primary">+{formatCurrency(record.deposit)}</span>
+                          <span className="text-primary">Aporte: {formatCurrency(record.deposit)}</span>
                         )}
                         {record.withdrawal && (
-                          <span className="text-destructive">-{formatCurrency(record.withdrawal)}</span>
+                          <span className="text-destructive">Saque: {formatCurrency(record.withdrawal)}</span>
                         )}
                       </div>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col">
+                      <span className="font-medium text-foreground">
+                        {formatCurrency(record.totalAmount)}
+                      </span>
+                      {(record.deposit || record.withdrawal) && (
+                        <div className="flex items-center gap-2 text-xs mt-1">
+                          {record.deposit && (
+                            <span className="text-primary">+{formatCurrency(record.deposit)}</span>
+                          )}
+                          {record.withdrawal && (
+                            <span className="text-destructive">-{formatCurrency(record.withdrawal)}</span>
+                          )}
+                        </div>
+                      )}
+                      {!isEditing && (
+                        <div className={`flex items-center gap-1 text-xs mt-1 ${
+                          isFirst 
+                            ? 'text-muted-foreground' 
+                            : isPositive 
+                              ? 'text-primary' 
+                              : isNegative 
+                                ? 'text-destructive' 
+                                : 'text-muted-foreground'
+                        }`}>
+                          {isFirst ? (
+                            <span>—</span>
+                          ) : isPositive ? (
+                            <>
+                              <TrendingUp className="h-3 w-3" />
+                              <span>+{formatCurrency(record.dailyYield)}</span>
+                            </>
+                          ) : isNegative ? (
+                            <>
+                              <TrendingDown className="h-3 w-3" />
+                              <span>{formatCurrency(record.dailyYield)}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Minus className="h-3 w-3" />
+                              <span>{formatCurrency(0)}</span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Daily Yield */}
-              <div className="flex items-center gap-3">
-                {!isEditing && (
-                  <div className={`flex items-center gap-1 text-sm min-w-[80px] justify-end ${
-                    isFirst 
-                      ? 'text-muted-foreground' 
-                      : isPositive 
-                        ? 'text-primary' 
-                        : isNegative 
-                          ? 'text-destructive' 
-                          : 'text-muted-foreground'
-                  }`}>
-                    {isFirst ? (
-                      <span className="text-xs">—</span>
-                    ) : isPositive ? (
-                      <>
-                        <TrendingUp className="h-3.5 w-3.5" />
-                        <span>+{formatCurrency(record.dailyYield)}</span>
-                      </>
-                    ) : isNegative ? (
-                      <>
-                        <TrendingDown className="h-3.5 w-3.5" />
-                        <span>{formatCurrency(record.dailyYield)}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Minus className="h-3.5 w-3.5" />
-                        <span>{formatCurrency(0)}</span>
-                      </>
-                    )}
-                  </div>
-                )}
-                
-                <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 shrink-0">
                   {isEditing ? (
                     <>
                       <Button
@@ -239,7 +237,6 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
                       </Button>
                     </>
                   )}
-                </div>
               </div>
             </div>
           );
