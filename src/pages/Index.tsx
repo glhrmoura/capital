@@ -38,22 +38,33 @@ const Index = () => {
     setSelectedMonth(month);
   };
 
-  const handleAddRecord = (day: number, amount: number) => {
-    addOrUpdateRecord(selectedYear, selectedMonth, day, amount);
+  const handleAddRecord = (day: number, amount: number, deposit?: number, withdrawal?: number) => {
+    addOrUpdateRecord(selectedYear, selectedMonth, day, amount, deposit, withdrawal);
   };
 
-  const handleUpdateRecord = (day: number, amount: number) => {
-    addOrUpdateRecord(selectedYear, selectedMonth, day, amount);
+  const handleUpdateRecord = (day: number, amount: number, deposit?: number, withdrawal?: number, timestamp?: number) => {
+    if (timestamp) {
+      deleteRecord(selectedYear, selectedMonth, day, timestamp);
+    }
+    addOrUpdateRecord(selectedYear, selectedMonth, day, amount, deposit, withdrawal);
   };
 
-  const handleDeleteRecord = (day: number) => {
-    deleteRecord(selectedYear, selectedMonth, day);
+  const handleDeleteRecord = (day: number, timestamp?: number) => {
+    deleteRecord(selectedYear, selectedMonth, day, timestamp);
   };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-10">
+      <header 
+        className="bg-card border-b border-border sticky z-10" 
+        style={{ 
+          top: 'env(safe-area-inset-top)',
+          paddingTop: '1rem',
+          paddingLeft: 'env(safe-area-inset-left)',
+          paddingRight: 'env(safe-area-inset-right)'
+        }}
+      >
         <div className="max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -80,7 +91,13 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-lg mx-auto px-4 py-6 space-y-4">
+      <main 
+        className="max-w-lg mx-auto px-4 py-6 space-y-4"
+        style={{
+          paddingLeft: 'calc(env(safe-area-inset-left) + 1rem)',
+          paddingRight: 'calc(env(safe-area-inset-right) + 1rem)'
+        }}
+      >
         <MonthSelector
           year={selectedYear}
           month={selectedMonth}
@@ -129,7 +146,14 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="text-center py-6 text-sm text-muted-foreground">
+      <footer 
+        className="text-center py-6 text-sm text-muted-foreground"
+        style={{
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)',
+          paddingLeft: 'env(safe-area-inset-left)',
+          paddingRight: 'env(safe-area-inset-right)'
+        }}
+      >
         Dados sincronizados na nuvem
       </footer>
     </div>
