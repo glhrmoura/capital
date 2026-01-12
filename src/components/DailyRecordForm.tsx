@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,12 +20,32 @@ interface DailyRecordFormProps {
 }
 
 export const DailyRecordForm = ({ year, month, existingRecords, onSubmit }: DailyRecordFormProps) => {
-  const [selectedDay, setSelectedDay] = useState<string>('');
+  const today = new Date();
+  const currentDay = today.getDate();
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
+  
+  const isCurrentMonth = year === currentYear && month === currentMonth;
+  const defaultDay = isCurrentMonth ? String(currentDay) : '';
+  
+  const [selectedDay, setSelectedDay] = useState<string>(defaultDay);
   const [recordType, setRecordType] = useState<string>('amount');
   const [value, setValue] = useState<string>('');
 
   const daysInMonth = getDaysInMonth(year, month);
-  const existingDays = existingRecords.map(r => parseInt(r.date.split('-')[2]));
+
+  useEffect(() => {
+    const today = new Date();
+    const currentDay = today.getDate();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    if (year === currentYear && month === currentMonth) {
+      setSelectedDay(String(currentDay));
+    } else if (!selectedDay) {
+      setSelectedDay('');
+    }
+  }, [year, month]);
 
   const sortedRecords = useMemo(() => {
     return [...existingRecords].sort((a, b) => {
@@ -97,10 +117,8 @@ export const DailyRecordForm = ({ year, month, existingRecords, onSubmit }: Dail
                 <SelectItem 
                   key={day} 
                   value={String(day)}
-                  className={existingDays.includes(day) ? 'text-primary font-medium' : ''}
                 >
                   {String(day).padStart(2, '0')}
-                  {existingDays.includes(day) && ' ✓'}
                 </SelectItem>
               ))}
             </SelectContent>
