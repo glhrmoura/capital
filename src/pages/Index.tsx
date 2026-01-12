@@ -64,7 +64,7 @@ const Index = () => {
               />
               <div>
                 <h1 className="text-lg font-semibold text-foreground">
-                  Meus Investimentos
+                  Capital
                 </h1>
                 <p className="text-sm text-muted-foreground">
                   Acompanhe seus rendimentos
@@ -128,9 +128,8 @@ const Index = () => {
         </Tabs>
       </main>
 
-      {/* Footer */}
-      <footer className="text-center py-6 text-sm text-muted-foreground">
-        Dados sincronizados na nuvem
+      <footer className="text-center py-4 text-xs text-muted-foreground">
+        Capital © {new Date().getFullYear()}
       </footer>
     </div>
   );
