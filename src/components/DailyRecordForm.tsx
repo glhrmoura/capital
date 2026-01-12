@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { getDaysInMonth } from '@/utils/formatters';
+import { getDaysInMonth, formatCurrencyInput, parseCurrencyInput } from '@/utils/formatters';
 import { DailyRecord } from '@/types/investment';
 
 interface DailyRecordFormProps {
@@ -70,7 +70,7 @@ export const DailyRecordForm = ({ year, month, existingRecords, onSubmit }: Dail
   };
 
   const calculateAmount = (): number => {
-    const numericValue = parseFloat(value.replace(',', '.')) || 0;
+    const numericValue = parseCurrencyInput(value);
     const previousAmount = getPreviousDayAmount(parseInt(selectedDay));
 
     if (recordType === 'deposit') {
@@ -85,7 +85,7 @@ export const DailyRecordForm = ({ year, month, existingRecords, onSubmit }: Dail
     e.preventDefault();
     
     const day = parseInt(selectedDay);
-    const numericValue = parseFloat(value.replace(',', '.')) || 0;
+    const numericValue = parseCurrencyInput(value);
     
     if (!day || isNaN(numericValue) || numericValue < 0) return;
 
@@ -151,7 +151,10 @@ export const DailyRecordForm = ({ year, month, existingRecords, onSubmit }: Dail
                   : 'Valor do saque'
             }
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={(e) => {
+              const formatted = formatCurrencyInput(e.target.value);
+              setValue(formatted);
+            }}
             className="pl-10"
           />
         </div>
