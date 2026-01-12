@@ -108,6 +108,7 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
           const day = parseInt(record.date.split('-')[2]);
           const recordId = `${record.date}-${record.timestamp || 0}`;
           const isEditing = editingRecordId === recordId;
+          const isDepositOrWithdrawal = !!(record.deposit || record.withdrawal);
           const isPositive = record.dailyYield > 0;
           const isNegative = record.dailyYield < 0;
           const isFirst = record.dailyYield === 0 && recordsWithYield[0].date === record.date;
@@ -162,7 +163,7 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
                           )}
                         </div>
                       )}
-                      {!isEditing && (
+                      {!isEditing && !isDepositOrWithdrawal && (
                         <div className={`flex items-center gap-1 text-xs mt-1 ${
                           isFirst 
                             ? 'text-muted-foreground' 
