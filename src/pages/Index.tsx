@@ -123,7 +123,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="graficos" className="mt-0">
-            <MonthCharts records={records} />
+            <MonthCharts records={records} year={selectedYear} month={selectedMonth} />
           </TabsContent>
         </Tabs>
       </main>
