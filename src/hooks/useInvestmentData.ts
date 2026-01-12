@@ -25,24 +25,35 @@ export const useInvestmentData = () => {
     return investmentData[key] || [];
   }, [investmentData]);
 
-  const addOrUpdateRecord = useCallback(async (year: number, month: number, day: number, amount: number) => {
+  const addOrUpdateRecord = useCallback(async (year: number, month: number, day: number, amount: number, deposit?: number, withdrawal?: number) => {
     if (!userId || !userDocRef) return;
 
     const key = getMonthKey(year, month);
     const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     
     const monthRecords = investmentData[key] || [];
-    const existingIndex = monthRecords.findIndex(r => r.date === dateString);
     
-    let newRecords: DailyRecord[];
-    if (existingIndex >= 0) {
-      newRecords = [...monthRecords];
-      newRecords[existingIndex] = { date: dateString, totalAmount: amount };
-    } else {
-      newRecords = [...monthRecords, { date: dateString, totalAmount: amount }];
+    const recordData: DailyRecord = {
+      date: dateString,
+      totalAmount: amount,
+      timestamp: Date.now(),
+    };
+    
+    if (deposit !== undefined && deposit > 0) {
+      recordData.deposit = deposit;
     }
     
-    newRecords.sort((a, b) => a.date.localeCompare(b.date));
+    if (withdrawal !== undefined && withdrawal > 0) {
+      recordData.withdrawal = withdrawal;
+    }
+    
+    const newRecords = [...monthRecords, recordData];
+    
+    newRecords.sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) return dateCompare;
+      return (a.timestamp || 0) - (b.timestamp || 0);
+    });
     
     const updatedData = { ...investmentData, [key]: newRecords };
     
@@ -58,14 +69,19 @@ export const useInvestmentData = () => {
     }
   }, [userId, userDocRef, investmentData]);
 
-  const deleteRecord = useCallback(async (year: number, month: number, day: number) => {
+  const deleteRecord = useCallback(async (year: number, month: number, day: number, timestamp?: number) => {
     if (!userId || !userDocRef) return;
 
     const key = getMonthKey(year, month);
     const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     
     const monthRecords = investmentData[key] || [];
-    const newRecords = monthRecords.filter(r => r.date !== dateString);
+    const newRecords = monthRecords.filter(r => {
+      if (timestamp !== undefined) {
+        return !(r.date === dateString && r.timestamp === timestamp);
+      }
+      return r.date !== dateString;
+    });
     
     const updatedData = { ...investmentData, [key]: newRecords };
     
@@ -93,8 +109,16 @@ export const useInvestmentData = () => {
     const firstDay = parseInt(firstRecord.date.split('-')[2]);
     const lastDay = parseInt(lastRecord.date.split('-')[2]);
     
+    const totalVariation = lastRecord.totalAmount - firstRecord.totalAmount;
+    
+    const totalDeposits = sortedRecords.reduce((sum, record) => sum + (record.deposit || 0), 0);
+    const totalWithdrawals = sortedRecords.reduce((sum, record) => sum + (record.withdrawal || 0), 0);
+    
+    const netMovements = totalDeposits - totalWithdrawals;
+    const realYield = totalVariation - netMovements;
+    
     return {
-      yield: lastRecord.totalAmount - firstRecord.totalAmount,
+      yield: realYield,
       firstDay,
       lastDay,
     };
