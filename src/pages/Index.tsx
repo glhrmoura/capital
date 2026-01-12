@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { TrendingUp, List, BarChart3 } from 'lucide-react';
+import { List, BarChart3 } from 'lucide-react';
 import { MonthSelector } from '@/components/MonthSelector';
 import { YieldCard } from '@/components/YieldCard';
 import { DailyRecordForm } from '@/components/DailyRecordForm';
@@ -57,9 +57,11 @@ const Index = () => {
         <div className="max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-primary-foreground" />
-              </div>
+              <img 
+                src="/icons/icon-192x192.png" 
+                alt="Capital" 
+                className="w-10 h-10 rounded-xl"
+              />
               <div>
                 <h1 className="text-lg font-semibold text-foreground">
                   Meus Investimentos
