@@ -14,16 +14,79 @@ import {
 import { DailyRecord } from '@/types/investment';
 import { formatCurrency } from '@/utils/formatters';
 
+interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: number;
+    dataKey?: string;
+    color?: string;
+  }>;
+  label?: string;
+}
+
+const MontanteTooltip = ({ active, payload, label }: TooltipProps) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-card border border-border rounded-lg p-3 shadow-lg z-50">
+        <p className="font-semibold text-foreground mb-2">{`Dia ${label}`}</p>
+        <p className="text-sm">
+          <span className="text-muted-foreground">Montante: </span>
+          <span className="font-medium text-foreground">
+            {formatCurrency(payload[0].value)}
+          </span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const RendimentoTooltip = ({ active, payload, label }: TooltipProps) => {
+  if (active && payload && payload.length) {
+    const value = payload[0].value;
+    const valueColor = value > 0 
+      ? 'text-primary' 
+      : value < 0 
+        ? 'text-destructive' 
+        : 'text-muted-foreground';
+    
+    return (
+      <div className="bg-card border border-border rounded-lg p-3 shadow-lg z-50">
+        <p className="font-semibold text-foreground mb-2">{`Dia ${label}`}</p>
+        <p className="text-sm">
+          <span className="text-muted-foreground">Rendimento: </span>
+          <span className={`font-medium ${valueColor}`}>
+            {formatCurrency(value)}
+          </span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 interface MonthChartsProps {
   records: DailyRecord[];
 }
 
 export const MonthCharts = ({ records }: MonthChartsProps) => {
   const chartData = useMemo(() => {
-    const sorted = [...records].sort((a, b) => a.date.localeCompare(b.date));
+    const sorted = [...records].sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) return dateCompare;
+      return (a.timestamp || 0) - (b.timestamp || 0);
+    });
     return sorted.map((record, index) => {
       const day = parseInt(record.date.split('-')[2]);
-      const dailyYield = index === 0 ? 0 : record.totalAmount - sorted[index - 1].totalAmount;
+      let dailyYield = 0;
+      if (index > 0) {
+        const previousRecord = sorted[index - 1];
+        const totalVariation = record.totalAmount - previousRecord.totalAmount;
+        const deposit = record.deposit || 0;
+        const withdrawal = record.withdrawal || 0;
+        dailyYield = totalVariation - (deposit - withdrawal);
+      }
       return {
         day: `${day}`,
         montante: record.totalAmount,
@@ -66,16 +129,7 @@ export const MonthCharts = ({ records }: MonthChartsProps) => {
                 tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
                 className="text-muted-foreground"
               />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                }}
-                labelStyle={{ color: 'hsl(var(--foreground))' }}
-                formatter={(value: number) => [formatCurrency(value), 'Montante']}
-                labelFormatter={(label) => `Dia ${label}`}
-              />
+              <Tooltip content={<MontanteTooltip />} />
               <Line
                 type="monotone"
                 dataKey="montante"
@@ -108,16 +162,7 @@ export const MonthCharts = ({ records }: MonthChartsProps) => {
                 tickFormatter={(value) => `${value >= 0 ? '+' : ''}${value}`}
                 className="text-muted-foreground"
               />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                }}
-                labelStyle={{ color: 'hsl(var(--foreground))' }}
-                formatter={(value: number) => [formatCurrency(value), 'Rendimento']}
-                labelFormatter={(label) => `Dia ${label}`}
-              />
+              <Tooltip content={<RendimentoTooltip />} />
               <Bar dataKey="rendimento" radius={[4, 4, 0, 0]}>
                 {chartData.map((entry, index) => (
                   <Cell
@@ -148,8 +193,11 @@ export const MonthCharts = ({ records }: MonthChartsProps) => {
             value={Math.max(...chartData.map(d => d.rendimento))}
           />
           <StatItem
-            label="Maior perda"
-            value={Math.min(...chartData.map(d => d.rendimento))}
+            label="Rendimento total"
+            value={chartData.length > 1 
+              ? chartData.slice(1).reduce((sum, d) => sum + d.rendimento, 0)
+              : 0
+            }
           />
           <StatItem
             label="Média diária"
