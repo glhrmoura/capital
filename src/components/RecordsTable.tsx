@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Trash2, Pencil, Check, X, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Trash2, Pencil, Check, X, TrendingUp, TrendingDown, Minus, Wallet, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DailyRecord } from '@/types/investment';
@@ -212,9 +212,21 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
               className="flex items-start justify-between px-4 py-3 hover:bg-muted/50 transition-colors"
             >
               <div className="flex items-start gap-3 flex-1">
-                <span className="w-8 h-8 rounded-lg bg-primary/10 text-primary font-medium flex items-center justify-center text-sm shrink-0 mt-0.5">
-                  {String(day).padStart(2, '0')}
-                </span>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                  record.deposit 
+                    ? 'bg-primary/10 text-primary' 
+                    : record.withdrawal 
+                      ? 'bg-destructive/10 text-destructive' 
+                      : 'bg-muted text-muted-foreground'
+                }`}>
+                  {record.deposit ? (
+                    <ArrowUpCircle className="h-5 w-5" />
+                  ) : record.withdrawal ? (
+                    <ArrowDownCircle className="h-5 w-5" />
+                  ) : (
+                    <Wallet className="h-5 w-5" />
+                  )}
+                </div>
                 
                 <div className="flex-1">
                   {isEditing ? (
@@ -291,6 +303,9 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
                     <div className="flex flex-col">
                       <span className="font-medium text-foreground">
                         {formatCurrency(record.totalAmount)}
+                      </span>
+                      <span className="text-xs text-muted-foreground mt-0.5">
+                        Dia {String(day).padStart(2, '0')}
                       </span>
                       {(record.deposit || record.withdrawal) && (
                         <div className="flex items-center gap-2 text-xs mt-1">
