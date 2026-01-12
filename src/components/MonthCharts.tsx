@@ -77,16 +77,60 @@ export const MonthCharts = ({ records }: MonthChartsProps) => {
       if (dateCompare !== 0) return dateCompare;
       return (a.timestamp || 0) - (b.timestamp || 0);
     });
+    
+    const firstAmountRecordIndex = sorted.findIndex(r => !(r.deposit || r.withdrawal));
+    
     return sorted.map((record, index) => {
       const day = parseInt(record.date.split('-')[2]);
+      const isDepositOrWithdrawal = !!(record.deposit || record.withdrawal);
       let dailyYield = 0;
-      if (index > 0) {
-        const previousRecord = sorted[index - 1];
-        const totalVariation = record.totalAmount - previousRecord.totalAmount;
-        const deposit = record.deposit || 0;
-        const withdrawal = record.withdrawal || 0;
-        dailyYield = totalVariation - (deposit - withdrawal);
+      
+      if (!isDepositOrWithdrawal) {
+        if (index === firstAmountRecordIndex) {
+          dailyYield = 0;
+        } else {
+          let previousAmountRecord: DailyRecord | null = null;
+          let searchIndex = index - 1;
+          
+          while (searchIndex >= 0) {
+            const candidate = sorted[searchIndex];
+            if (!(candidate.deposit || candidate.withdrawal)) {
+              previousAmountRecord = candidate;
+              break;
+            }
+            searchIndex--;
+          }
+          
+          if (previousAmountRecord) {
+            const previousIndex = sorted.findIndex(r => 
+              r.date === previousAmountRecord.date && 
+              (r.timestamp || 0) === (previousAmountRecord.timestamp || 0)
+            );
+            
+            let totalDeposits = 0;
+            let totalWithdrawals = 0;
+            
+            for (let i = previousIndex + 1; i < index; i++) {
+              const intermediateRecord = sorted[i];
+              if (intermediateRecord.deposit) {
+                totalDeposits += intermediateRecord.deposit;
+              }
+              if (intermediateRecord.withdrawal) {
+                totalWithdrawals += intermediateRecord.withdrawal;
+              }
+            }
+            
+            const deposit = record.deposit || 0;
+            const withdrawal = record.withdrawal || 0;
+            totalDeposits += deposit;
+            totalWithdrawals += withdrawal;
+            
+            const totalVariation = record.totalAmount - previousAmountRecord.totalAmount;
+            dailyYield = totalVariation - (totalDeposits - totalWithdrawals);
+          }
+        }
       }
+      
       return {
         day: `${day}`,
         montante: record.totalAmount,
