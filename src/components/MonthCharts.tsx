@@ -68,9 +68,33 @@ const RendimentoTooltip = ({ active, payload, label }: TooltipProps) => {
 
 interface MonthChartsProps {
   records: DailyRecord[];
+  year: number;
+  month: number;
 }
 
-export const MonthCharts = ({ records }: MonthChartsProps) => {
+const getWorkingDaysInMonth = (year: number, month: number): number => {
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  let workingDays = 0;
+  
+  for (let day = 1; day <= lastDay.getDate(); day++) {
+    const date = new Date(year, month, day);
+    const dayOfWeek = date.getDay();
+    if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+      workingDays++;
+    }
+  }
+  
+  return workingDays;
+};
+
+const isWorkingDay = (year: number, month: number, day: number): boolean => {
+  const date = new Date(year, month, day);
+  const dayOfWeek = date.getDay();
+  return dayOfWeek >= 1 && dayOfWeek <= 5;
+};
+
+export const MonthCharts = ({ records, year, month }: MonthChartsProps) => {
   const chartData = useMemo(() => {
     const sorted = [...records].sort((a, b) => {
       const dateCompare = a.date.localeCompare(b.date);
@@ -152,8 +176,47 @@ export const MonthCharts = ({ records }: MonthChartsProps) => {
     );
   }
 
+  const dailyYieldData = useMemo(() => {
+    return chartData.filter(entry => {
+      const day = parseInt(entry.day);
+      return isWorkingDay(year, month, day);
+    });
+  }, [chartData, year, month]);
+
   return (
     <div className="space-y-4">
+      {/* Stats Summary */}
+      <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
+        <h3 className="text-sm font-medium text-muted-foreground mb-3">
+          Estatísticas do Mês
+        </h3>
+        <div className="grid grid-cols-2 gap-4">
+          <StatItem
+            label="Maior ganho"
+            value={Math.max(...chartData.map(d => d.rendimento))}
+          />
+          <StatItem
+            label="Rendimento total"
+            value={chartData.length > 1 
+              ? chartData.slice(1).reduce((sum, d) => sum + d.rendimento, 0)
+              : 0
+            }
+          />
+          <StatItem
+            label="Média diária"
+            value={chartData.length > 1 
+              ? chartData.slice(1).reduce((sum, d) => sum + d.rendimento, 0) / getWorkingDaysInMonth(year, month)
+              : 0
+            }
+          />
+          <StatItem
+            label="Dias registrados"
+            value={chartData.length}
+            isCount
+          />
+        </div>
+      </div>
+
       {/* Evolution Chart */}
       <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
         <h3 className="text-sm font-medium text-muted-foreground mb-4">
@@ -194,7 +257,7 @@ export const MonthCharts = ({ records }: MonthChartsProps) => {
         </h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
+            <BarChart data={dailyYieldData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis 
                 dataKey="day" 
@@ -208,7 +271,7 @@ export const MonthCharts = ({ records }: MonthChartsProps) => {
               />
               <Tooltip content={<RendimentoTooltip />} />
               <Bar dataKey="rendimento" radius={[4, 4, 0, 0]}>
-                {chartData.map((entry, index) => (
+                {dailyYieldData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={
@@ -223,38 +286,6 @@ export const MonthCharts = ({ records }: MonthChartsProps) => {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Stats Summary */}
-      <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
-        <h3 className="text-sm font-medium text-muted-foreground mb-3">
-          Estatísticas do Mês
-        </h3>
-        <div className="grid grid-cols-2 gap-4">
-          <StatItem
-            label="Maior ganho"
-            value={Math.max(...chartData.map(d => d.rendimento))}
-          />
-          <StatItem
-            label="Rendimento total"
-            value={chartData.length > 1 
-              ? chartData.slice(1).reduce((sum, d) => sum + d.rendimento, 0)
-              : 0
-            }
-          />
-          <StatItem
-            label="Média diária"
-            value={chartData.length > 1 
-              ? chartData.slice(1).reduce((sum, d) => sum + d.rendimento, 0) / (chartData.length - 1)
-              : 0
-            }
-          />
-          <StatItem
-            label="Dias registrados"
-            value={chartData.length}
-            isCount
-          />
         </div>
       </div>
     </div>
