@@ -43,10 +43,7 @@ const Index = () => {
   };
 
   const handleUpdateRecord = (day: number, amount: number, deposit?: number, withdrawal?: number, timestamp?: number) => {
-    if (timestamp) {
-      deleteRecord(selectedYear, selectedMonth, day, timestamp);
-    }
-    addOrUpdateRecord(selectedYear, selectedMonth, day, amount, deposit, withdrawal);
+    addOrUpdateRecord(selectedYear, selectedMonth, day, amount, deposit, withdrawal, timestamp);
   };
 
   const handleDeleteRecord = (day: number, timestamp?: number) => {
