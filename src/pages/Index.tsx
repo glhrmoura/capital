@@ -54,17 +54,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       {/* Header */}
-      <header 
-        className="bg-card border-b border-border sticky z-10" 
-        style={{ 
-          top: 'env(safe-area-inset-top)',
-          paddingTop: '1rem',
-          paddingLeft: 'env(safe-area-inset-left)',
-          paddingRight: 'env(safe-area-inset-right)'
-        }}
-      >
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
         <div className="max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -91,13 +83,7 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main 
-        className="max-w-lg mx-auto px-4 py-6 space-y-4"
-        style={{
-          paddingLeft: 'calc(env(safe-area-inset-left) + 1rem)',
-          paddingRight: 'calc(env(safe-area-inset-right) + 1rem)'
-        }}
-      >
+      <main className="max-w-lg mx-auto px-4 pt-24 pb-6 space-y-4">
         <MonthSelector
           year={selectedYear}
           month={selectedMonth}
@@ -146,14 +132,7 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer 
-        className="text-center py-6 text-sm text-muted-foreground"
-        style={{
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)',
-          paddingLeft: 'env(safe-area-inset-left)',
-          paddingRight: 'env(safe-area-inset-right)'
-        }}
-      >
+      <footer className="text-center py-6 text-sm text-muted-foreground">
         Dados sincronizados na nuvem
       </footer>
     </div>
