@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { getDaysInMonth, formatCurrencyInput, parseCurrencyInput } from '@/utils/formatters';
+import { getDaysInMonth, formatCurrencyInput, parseCurrencyInput, formatCurrency } from '@/utils/formatters';
 import { DailyRecord } from '@/types/investment';
 
 interface DailyRecordFormProps {
@@ -166,13 +166,13 @@ export const DailyRecordForm = ({ year, month, existingRecords, onSubmit }: Dail
                 {previousAmount > 0 ? 'Montante anterior:' : 'Sem registro anterior'}
               </span>
               <span className="font-medium">
-                {previousAmount > 0 ? `R$ ${previousAmount.toFixed(2).replace('.', ',')}` : 'R$ 0,00'}
+                {formatCurrency(previousAmount)}
               </span>
             </div>
             <div className="flex justify-between items-center mt-2 pt-2 border-t border-border">
               <span className="text-muted-foreground">Novo montante:</span>
               <span className="font-semibold text-primary">
-                R$ {calculatedAmount.toFixed(2).replace('.', ',')}
+                {formatCurrency(calculatedAmount)}
               </span>
             </div>
           </div>
