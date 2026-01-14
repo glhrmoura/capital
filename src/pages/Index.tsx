@@ -8,6 +8,7 @@ import { MonthCharts } from '@/components/MonthCharts';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { UserMenu } from '@/components/UserMenu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useInvestmentData } from '@/hooks/useInvestmentData';
 
 const Index = () => {
@@ -15,7 +16,7 @@ const Index = () => {
   const [selectedYear, setSelectedYear] = useState(today.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth());
 
-  const { getRecordsForMonth, addOrUpdateRecord, deleteRecord, calculateYield } = useInvestmentData();
+  const { loading, getRecordsForMonth, getAllRecords, addOrUpdateRecord, deleteRecord, calculateYield } = useInvestmentData();
 
   const records = useMemo(
     () => getRecordsForMonth(selectedYear, selectedMonth),
@@ -28,10 +29,16 @@ const Index = () => {
   );
 
   const currentAmount = useMemo(() => {
-    if (records.length === 0) return null;
-    const sortedRecords = [...records].sort((a, b) => b.date.localeCompare(a.date));
+    const allRecords = getAllRecords();
+    const amountRecords = allRecords.filter(r => !(r.deposit || r.withdrawal));
+    if (amountRecords.length === 0) return null;
+    const sortedRecords = [...amountRecords].sort((a, b) => {
+      const dateCompare = b.date.localeCompare(a.date);
+      if (dateCompare !== 0) return dateCompare;
+      return (b.timestamp || 0) - (a.timestamp || 0);
+    });
     return sortedRecords[0].totalAmount;
-  }, [records]);
+  }, [getAllRecords]);
 
   const handleMonthChange = (year: number, month: number) => {
     setSelectedYear(year);
@@ -87,45 +94,78 @@ const Index = () => {
           onMonthChange={handleMonthChange}
         />
 
-        <YieldCard
-          yieldValue={yieldData?.yield ?? null}
-          firstDay={yieldData?.firstDay ?? null}
-          lastDay={yieldData?.lastDay ?? null}
-          currentAmount={currentAmount}
-          month={selectedMonth}
-        />
+        {loading ? (
+          <div className="bg-card rounded-xl p-6 shadow-sm border border-border space-y-4">
+            <div className="text-center pb-4 border-b border-border">
+              <Skeleton className="h-4 w-24 mx-auto mb-2" />
+              <Skeleton className="h-10 w-40 mx-auto" />
+            </div>
+            <div className="text-center">
+              <Skeleton className="h-4 w-32 mx-auto mb-2" />
+              <Skeleton className="h-12 w-48 mx-auto rounded-full" />
+              <Skeleton className="h-4 w-56 mx-auto mt-3" />
+            </div>
+          </div>
+        ) : (
+          <YieldCard
+            yieldValue={yieldData?.yield ?? null}
+            firstDay={yieldData?.firstDay ?? null}
+            lastDay={yieldData?.lastDay ?? null}
+            currentAmount={currentAmount}
+            month={selectedMonth}
+          />
+        )}
 
-        <Tabs defaultValue="registros" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="registros" className="flex items-center gap-2">
-              <List className="h-4 w-4" />
-              Registros
-            </TabsTrigger>
-            <TabsTrigger value="graficos" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Gráficos
-            </TabsTrigger>
-          </TabsList>
+        {loading ? (
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <Skeleton className="h-10 w-20 rounded-md" />
+              <Skeleton className="h-10 flex-1 rounded-md" />
+            </div>
+            <div className="bg-card rounded-xl p-4 shadow-sm border border-border space-y-3">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </div>
+            <div className="space-y-3">
+              <Skeleton className="h-20 w-full rounded-lg" />
+              <Skeleton className="h-20 w-full rounded-lg" />
+              <Skeleton className="h-20 w-full rounded-lg" />
+            </div>
+          </div>
+        ) : (
+          <Tabs defaultValue="registros" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="registros" className="flex items-center gap-2">
+                <List className="h-4 w-4" />
+                Registros
+              </TabsTrigger>
+              <TabsTrigger value="graficos" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Gráficos
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="registros" className="space-y-4 mt-0">
-            <DailyRecordForm
-              year={selectedYear}
-              month={selectedMonth}
-              existingRecords={records}
-              onSubmit={handleAddRecord}
-            />
+            <TabsContent value="registros" className="space-y-4 mt-0">
+              <DailyRecordForm
+                year={selectedYear}
+                month={selectedMonth}
+                existingRecords={records}
+                onSubmit={handleAddRecord}
+              />
 
-            <RecordsTable
-              records={records}
-              onUpdate={handleUpdateRecord}
-              onDelete={handleDeleteRecord}
-            />
-          </TabsContent>
+              <RecordsTable
+                records={records}
+                onUpdate={handleUpdateRecord}
+                onDelete={handleDeleteRecord}
+              />
+            </TabsContent>
 
-          <TabsContent value="graficos" className="mt-0">
-            <MonthCharts records={records} year={selectedYear} month={selectedMonth} />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="graficos" className="mt-0">
+              <MonthCharts records={records} year={selectedYear} month={selectedMonth} />
+            </TabsContent>
+          </Tabs>
+        )}
       </main>
 
       <footer className="text-center py-4 text-xs text-muted-foreground">
