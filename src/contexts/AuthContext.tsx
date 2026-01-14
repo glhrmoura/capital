@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode } from 'react';
-import { User, signInWithPopup, signOut } from 'firebase/auth';
+import { User, signInWithPopup, signOut, updateProfile } from 'firebase/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, googleProvider } from '@/lib/firebase';
 
@@ -8,6 +8,7 @@ interface AuthContextType {
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  updateDisplayName: (displayName: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,8 +34,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateDisplayName = async (displayName: string) => {
+    if (!user) {
+      throw new Error('User is not authenticated');
+    }
+    try {
+      await updateProfile(user, { displayName });
+    } catch (error) {
+      console.error('Error updating display name:', error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user: user ?? null, loading, signInWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user: user ?? null, loading, signInWithGoogle, logout, updateDisplayName }}>
       {children}
     </AuthContext.Provider>
   );
