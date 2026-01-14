@@ -131,8 +131,8 @@ export const DailyRecordForm = ({ year, month, existingRecords, initialAmount, o
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={RecordType.AMOUNT}>Montante</SelectItem>
-              <SelectItem value={RecordType.DEPOSIT}>Aporte</SelectItem>
-              <SelectItem value={RecordType.WITHDRAWAL}>Saque</SelectItem>
+              <SelectItem value={RecordType.DEPOSIT}>Entrada</SelectItem>
+              <SelectItem value={RecordType.WITHDRAWAL}>Saída</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -144,13 +144,7 @@ export const DailyRecordForm = ({ year, month, existingRecords, initialAmount, o
           <Input
             type="text"
             inputMode="decimal"
-            placeholder={
-              recordType === RecordType.AMOUNT
-                ? 'Valor do montante' 
-                : recordType === RecordType.DEPOSIT
-                  ? 'Valor do aporte' 
-                  : 'Valor do saque'
-            }
+            placeholder="0,00"
             value={value}
             onChange={(e) => {
               const formatted = formatCurrencyInput(e.target.value);
