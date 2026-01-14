@@ -1,36 +1,14 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BiometricAuth } from '@/components/BiometricAuth';
 
 interface ProtectedRouteProps {
   children: ReactNode;
 }
 
-const isIOS = () => {
-  return /iPhone|iPad|iPod/.test(navigator.userAgent);
-};
-
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
-  const [biometricAuthenticated, setBiometricAuthenticated] = useState(false);
-
-  useEffect(() => {
-    if (!loading && user) {
-      const wasAuthenticated = sessionStorage.getItem('biometricAuthenticated');
-      if (wasAuthenticated === 'true') {
-        setBiometricAuthenticated(true);
-      }
-    } else if (!loading && !user) {
-      sessionStorage.removeItem('biometricAuthenticated');
-      setBiometricAuthenticated(false);
-    }
-  }, [loading, user]);
-
-  const handleBiometricAuthenticated = () => {
-    setBiometricAuthenticated(true);
-  };
 
   if (loading) {
     return (
@@ -91,10 +69,6 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   if (!user) {
     return <Navigate to="/login" replace />;
-  }
-
-  if (isIOS() && !biometricAuthenticated) {
-    return <BiometricAuth onAuthenticated={handleBiometricAuthenticated} />;
   }
 
   return <>{children}</>;
