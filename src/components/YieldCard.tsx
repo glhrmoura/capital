@@ -28,7 +28,6 @@ export const YieldCard = ({ yieldValue, firstDay, lastDay, currentAmount, month,
   
   return (
     <div className="bg-card rounded-xl p-6 shadow-sm border border-border space-y-4">
-      {/* Current Amount */}
       <div className="relative text-center pb-4 border-b border-border">
         {!isCurrentMonth && (
           <TooltipProvider>
@@ -55,7 +54,6 @@ export const YieldCard = ({ yieldValue, firstDay, lastDay, currentAmount, month,
         </p>
       </div>
       
-      {/* Yield */}
       <div className="text-center">
         <p className="text-sm text-muted-foreground mb-2">Rendimento do Mês</p>
         
