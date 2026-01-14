@@ -60,7 +60,7 @@ export const InitialAmountDialog = ({ open, onOpenChange, initialValue, onSave }
         }
       }}>
         <DialogHeader>
-          <DialogTitle>{isEditMode ? 'Editar Montante Inicial' : 'Definir Montante Inicial'}</DialogTitle>
+          <DialogTitle>{isEditMode ? 'Editar Investimento Inicial' : 'Definir Investimento Inicial'}</DialogTitle>
           <DialogDescription>
             {isEditMode 
               ? 'Altere o valor inicial do seu investimento.'
