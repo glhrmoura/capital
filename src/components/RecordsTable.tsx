@@ -269,7 +269,7 @@ export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, 
                         <>
                           {record.type === RecordType.DEPOSIT && (
                             <div className="flex items-center gap-2">
-                              <span className="text-muted-foreground text-sm text-primary">Aporte: R$</span>
+                              <span className="text-muted-foreground text-sm text-primary">Entrada: R$</span>
                               <Input
                                 type="text"
                                 inputMode="decimal"
@@ -280,14 +280,14 @@ export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, 
                                 }}
                                 onKeyDown={handleKeyDown}
                                 className="w-32 h-8"
-                                placeholder="Valor do aporte"
+                                placeholder="0,00"
                                 autoFocus
                               />
                             </div>
                           )}
                           {record.type === RecordType.WITHDRAWAL && (
                             <div className="flex items-center gap-2">
-                              <span className="text-muted-foreground text-sm text-destructive">Saque: R$</span>
+                              <span className="text-muted-foreground text-sm text-destructive">Saída: R$</span>
                               <Input
                                 type="text"
                                 inputMode="decimal"
@@ -298,7 +298,7 @@ export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, 
                                 }}
                                 onKeyDown={handleKeyDown}
                                 className="w-32 h-8"
-                                placeholder="Valor do saque"
+                                placeholder="0,00"
                                 autoFocus
                               />
                             </div>
