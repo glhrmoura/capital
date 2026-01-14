@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Trash2, Pencil, Check, X, TrendingUp, TrendingDown, Minus, Wallet, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+import { Trash2, Pencil, Check, X, TrendingUp, TrendingDown, Minus, Wallet, ArrowUpCircle, ArrowDownCircle, ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DailyRecord, isAmountRecord, isDepositOrWithdrawal, RecordType } from '@/types/investment';
@@ -19,6 +19,7 @@ export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, 
   const [editValue, setEditValue] = useState<string>('');
   const [editDeposit, setEditDeposit] = useState<string>('');
   const [editWithdrawal, setEditWithdrawal] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const recordsWithYield = useMemo(() => {
     const sorted = [...records].sort((a, b) => {
@@ -117,6 +118,17 @@ export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, 
       return { ...record, dailyYield };
     });
   }, [records, initialAmount, getAllRecords]);
+
+  const sortedRecordsWithYield = useMemo(() => {
+    return [...recordsWithYield].sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) {
+        return sortOrder === 'desc' ? -dateCompare : dateCompare;
+      }
+      const timestampCompare = (a.timestamp || 0) - (b.timestamp || 0);
+      return sortOrder === 'desc' ? -timestampCompare : timestampCompare;
+    });
+  }, [recordsWithYield, sortOrder]);
 
   const getPreviousDayAmount = (day: number, currentRecord: DailyRecord): number => {
     const sorted = [...records].sort((a, b) => {
@@ -223,21 +235,31 @@ export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, 
 
   return (
     <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-      <div className="px-4 py-3 border-b border-border">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <h3 className="text-sm font-medium text-muted-foreground">
-          Registros ({records.length} dias)
+          Registros
         </h3>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
+          title={sortOrder === 'desc' ? 'Mais recente primeiro' : 'Mais antigo primeiro'}
+        >
+          <ArrowUpDown className="h-4 w-4" />
+        </Button>
       </div>
       
       <div className="divide-y divide-border">
-        {recordsWithYield.map((record) => {
+        {sortedRecordsWithYield.map((record) => {
           const day = parseInt(record.date.split('-')[2]);
           const recordId = `${record.date}-${record.timestamp || 0}`;
           const isEditing = editingRecordId === recordId;
           const isDepositOrWithdrawalRecord = isDepositOrWithdrawal(record);
           const isPositive = record.dailyYield > 0;
           const isNegative = record.dailyYield < 0;
-          const isFirst = record.dailyYield === 0 && recordsWithYield[0].date === record.date;
+          const originalFirstRecord = recordsWithYield[0];
+          const isFirst = record.dailyYield === 0 && originalFirstRecord && originalFirstRecord.date === record.date;
           
           return (
             <div
