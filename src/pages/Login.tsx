@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { LoginButton } from '@/components/LoginButton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +7,12 @@ import { Loader2 } from 'lucide-react';
 
 const Login = () => {
   const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      sessionStorage.setItem('appStartTime', Date.now().toString());
+    }
+  }, [user]);
 
   if (loading) {
     return (
