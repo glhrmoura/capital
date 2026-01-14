@@ -12,13 +12,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useInvestmentData } from '@/hooks/useInvestmentData';
 import { DailyRecord } from '@/types/investment';
+import { InitialAmountDialog } from '@/components/InitialAmountDialog';
 
 const Index = () => {
   const today = new Date();
   const [selectedYear, setSelectedYear] = useState(today.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth());
 
-  const { loading, investmentData, getRecordsForMonth, getAllRecords, addOrUpdateRecord, deleteRecord, calculateYield } = useInvestmentData();
+  const { loading, investmentData, initialAmount, getRecordsForMonth, getAllRecords, addOrUpdateRecord, deleteRecord, calculateYield, setInitialAmount } = useInvestmentData();
 
   const records = useMemo(
     () => getRecordsForMonth(selectedYear, selectedMonth),
@@ -36,7 +37,7 @@ const Index = () => {
       allRecords.push(...monthRecords);
     });
     
-    if (allRecords.length === 0) return null;
+    if (allRecords.length === 0) return initialAmount ?? null;
     
     const sortedRecords = [...allRecords].sort((a, b) => {
       const dateCompare = b.date.localeCompare(a.date);
@@ -45,7 +46,7 @@ const Index = () => {
     });
     
     return sortedRecords[0].totalAmount;
-  }, [investmentData]);
+  }, [investmentData, initialAmount]);
 
   const handleMonthChange = (year: number, month: number) => {
     setSelectedYear(year);
@@ -62,6 +63,10 @@ const Index = () => {
 
   const handleDeleteRecord = (day: number, timestamp?: number) => {
     deleteRecord(selectedYear, selectedMonth, day, timestamp);
+  };
+
+  const handleSetInitialAmount = (amount: number) => {
+    setInitialAmount(amount);
   };
 
   return (
@@ -160,18 +165,27 @@ const Index = () => {
                 year={selectedYear}
                 month={selectedMonth}
                 existingRecords={records}
+                initialAmount={initialAmount}
                 onSubmit={handleAddRecord}
               />
 
               <RecordsTable
                 records={records}
+                initialAmount={initialAmount}
+                getAllRecords={getAllRecords}
                 onUpdate={handleUpdateRecord}
                 onDelete={handleDeleteRecord}
               />
             </TabsContent>
 
             <TabsContent value="graficos" className="mt-0">
-              <MonthCharts records={records} year={selectedYear} month={selectedMonth} />
+              <MonthCharts 
+                records={records} 
+                year={selectedYear} 
+                month={selectedMonth}
+                initialAmount={initialAmount}
+                getAllRecords={getAllRecords}
+              />
             </TabsContent>
           </Tabs>
         )}
@@ -180,6 +194,10 @@ const Index = () => {
       <footer className="text-center py-4 text-xs text-muted-foreground">
         Capital © {new Date().getFullYear()}
       </footer>
+
+      {!loading && initialAmount === undefined && (
+        <InitialAmountDialog open={true} onSave={handleSetInitialAmount} />
+      )}
     </div>
   );
 };
