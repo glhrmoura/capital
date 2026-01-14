@@ -8,7 +8,7 @@ export interface DailyRecord {
   date: string; // YYYY-MM-DD
   totalAmount: number;
   type: RecordType;
-  value?: number; // Valor do aporte ou saque (quando type é DEPOSIT ou WITHDRAWAL)
+  value?: number; // Valor da entrada ou saída (quando type é DEPOSIT ou WITHDRAWAL)
   timestamp?: number; // Timestamp para diferenciar registros no mesmo dia
 }
 
