@@ -71,7 +71,6 @@ const Index = () => {
 
   return (
     <div className="min-h-dvh bg-background">
-      {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
         <div className="max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -98,7 +97,6 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-lg mx-auto px-4 pt-24 pb-6 space-y-4">
         <MonthSelector
           year={selectedYear}
