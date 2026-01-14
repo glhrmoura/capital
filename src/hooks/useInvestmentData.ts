@@ -173,6 +173,7 @@ export const useInvestmentData = () => {
 
   return {
     loading,
+    investmentData,
     getRecordsForMonth,
     getAllRecords,
     addOrUpdateRecord,
