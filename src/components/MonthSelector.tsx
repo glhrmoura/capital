@@ -36,7 +36,7 @@ export const MonthSelector = ({ year, month, onMonthChange }: MonthSelectorProps
         <ChevronLeft className="h-5 w-5" />
       </Button>
       
-      <div className="text-center">
+      <div className="text-center flex-1">
         <h2 className="text-xl font-semibold text-foreground">
           {getMonthName(month)}
         </h2>
