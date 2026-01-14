@@ -20,7 +20,6 @@ export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, 
   const [editDeposit, setEditDeposit] = useState<string>('');
   const [editWithdrawal, setEditWithdrawal] = useState<string>('');
 
-  // Calculate daily yields
   const recordsWithYield = useMemo(() => {
     const sorted = [...records].sort((a, b) => {
       const dateCompare = a.date.localeCompare(b.date);
