@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Moon, Sun, Wallet, User } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Wallet, User, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from 'next-themes';
@@ -9,7 +9,7 @@ import { InitialAmountDialog } from '@/components/InitialAmountDialog';
 import { formatCurrency } from '@/utils/formatters';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   Dialog,
   DialogContent,
@@ -24,11 +24,13 @@ const Settings = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { initialAmount, setInitialAmount } = useInvestmentData();
-  const { user, updateDisplayName } = useAuth();
+  const { user, updateDisplayName, updatePhotoURL } = useAuth();
   const { toast } = useToast();
   const [isEditInitialAmountOpen, setIsEditInitialAmountOpen] = useState(false);
   const [isEditNameOpen, setIsEditNameOpen] = useState(false);
+  const [isEditPhotoOpen, setIsEditPhotoOpen] = useState(false);
   const [nameValue, setNameValue] = useState('');
+  const [photoURLValue, setPhotoURLValue] = useState('');
 
   const handleSetInitialAmount = (amount: number) => {
     setInitialAmount(amount);
@@ -63,6 +65,53 @@ const Settings = () => {
       toast({
         title: 'Erro',
         description: 'Não foi possível atualizar o nome',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleEditPhoto = () => {
+    if (user?.photoURL) {
+      setPhotoURLValue(user.photoURL);
+    }
+    setIsEditPhotoOpen(true);
+  };
+
+  const handleSavePhoto = async () => {
+    if (!photoURLValue.trim()) {
+      toast({
+        title: 'Erro',
+        description: 'A URL não pode estar vazia',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const url = new URL(photoURLValue.trim());
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        throw new Error('URL inválida');
+      }
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Por favor, insira uma URL válida',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      await updatePhotoURL(photoURLValue.trim());
+      setIsEditPhotoOpen(false);
+      toast({
+        title: 'Sucesso',
+        description: 'Foto atualizada com sucesso',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível atualizar a foto',
         variant: 'destructive',
       });
     }
@@ -107,9 +156,20 @@ const Settings = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12">
-                <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || 'Usuário'} />
+                  <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
+                </Avatar>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full"
+                  onClick={handleEditPhoto}
+                >
+                  <Camera className="h-3 w-3" />
+                </Button>
+              </div>
               <div className="flex-1">
                 <CardTitle className="text-lg">{user?.displayName || 'Usuário'}</CardTitle>
                 <CardDescription className="text-sm">{user?.email}</CardDescription>
@@ -270,6 +330,54 @@ const Settings = () => {
                 Cancelar
               </Button>
               <Button type="submit" className="flex-1" disabled={!nameValue.trim()}>
+                Salvar
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditPhotoOpen} onOpenChange={setIsEditPhotoOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Foto</DialogTitle>
+            <DialogDescription>
+              Insira a URL da imagem para sua foto de perfil
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSavePhoto();
+            }}
+            className="space-y-4"
+          >
+            <Input
+              type="url"
+              placeholder="https://exemplo.com/foto.jpg"
+              value={photoURLValue}
+              onChange={(e) => setPhotoURLValue(e.target.value)}
+              autoFocus
+            />
+            {photoURLValue && (
+              <div className="rounded-lg border border-border p-2">
+                <p className="text-xs text-muted-foreground mb-2">Preview:</p>
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={photoURLValue} alt="Preview" />
+                  <AvatarFallback>?</AvatarFallback>
+                </Avatar>
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => setIsEditPhotoOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" className="flex-1" disabled={!photoURLValue.trim()}>
                 Salvar
               </Button>
             </div>
