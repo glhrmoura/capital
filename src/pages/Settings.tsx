@@ -270,7 +270,7 @@ const Settings = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <label className="text-sm font-medium">Montante Inicial</label>
+                  <label className="text-sm font-medium">Investimento Inicial</label>
                   <p className="text-sm text-muted-foreground">
                     {initialAmount !== undefined 
                       ? formatCurrency(initialAmount)
