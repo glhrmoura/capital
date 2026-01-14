@@ -9,6 +9,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { UserMenu } from '@/components/UserMenu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { useInvestmentData } from '@/hooks/useInvestmentData';
 
 const Index = () => {
@@ -113,6 +114,8 @@ const Index = () => {
             lastDay={yieldData?.lastDay ?? null}
             currentAmount={currentAmount}
             month={selectedMonth}
+            year={selectedYear}
+            onMonthChange={handleMonthChange}
           />
         )}
 
