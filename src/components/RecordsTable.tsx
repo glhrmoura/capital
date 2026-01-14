@@ -2,16 +2,18 @@ import { useState, useMemo } from 'react';
 import { Trash2, Pencil, Check, X, TrendingUp, TrendingDown, Minus, Wallet, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { DailyRecord } from '@/types/investment';
+import { DailyRecord, isAmountRecord, isDepositOrWithdrawal, RecordType } from '@/types/investment';
 import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from '@/utils/formatters';
 
 interface RecordsTableProps {
   records: DailyRecord[];
+  initialAmount?: number;
+  getAllRecords: () => DailyRecord[];
   onUpdate: (day: number, amount: number, deposit?: number, withdrawal?: number, timestamp?: number) => void;
   onDelete: (day: number, timestamp?: number) => void;
 }
 
-export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps) => {
+export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, onDelete }: RecordsTableProps) => {
   const [editingDay, setEditingDay] = useState<number | null>(null);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
@@ -26,16 +28,48 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
       return (a.timestamp || 0) - (b.timestamp || 0);
     });
     
-    const firstAmountRecordIndex = sorted.findIndex(r => !(r.deposit || r.withdrawal));
+    const allRecords = getAllRecords();
+    const allSortedRecords = [...allRecords].sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) return dateCompare;
+      return (a.timestamp || 0) - (b.timestamp || 0);
+    });
+    
+    const firstAmountRecordIndex = sorted.findIndex(isAmountRecord);
     
     return sorted.map((record, index) => {
-      const isDepositOrWithdrawal = !!(record.deposit || record.withdrawal);
+      const isDepositOrWithdrawalRecord = isDepositOrWithdrawal(record);
       
-      if (isDepositOrWithdrawal) {
+      if (isDepositOrWithdrawalRecord) {
         return { ...record, dailyYield: 0 };
       }
       
       if (index === firstAmountRecordIndex) {
+        const allAmountRecords = allSortedRecords.filter(isAmountRecord);
+        const isFirstRecordGlobal = allAmountRecords.length > 0 && 
+          allAmountRecords[0].date === record.date && 
+          (allAmountRecords[0].timestamp || 0) === (record.timestamp || 0);
+        
+        if (isFirstRecordGlobal && initialAmount !== undefined) {
+          let totalDeposits = 0;
+          let totalWithdrawals = 0;
+          
+          for (let i = 0; i < index; i++) {
+            const intermediateRecord = sorted[i];
+            if (intermediateRecord.type === RecordType.DEPOSIT && intermediateRecord.value) {
+              totalDeposits += intermediateRecord.value;
+            }
+            if (intermediateRecord.type === RecordType.WITHDRAWAL && intermediateRecord.value) {
+              totalWithdrawals += intermediateRecord.value;
+            }
+          }
+          
+          const totalVariation = record.totalAmount - initialAmount;
+          const dailyYield = totalVariation - (totalDeposits - totalWithdrawals);
+          
+          return { ...record, dailyYield };
+        }
+        
         return { ...record, dailyYield: 0 };
       }
       
@@ -44,7 +78,7 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
       
       while (searchIndex >= 0) {
         const candidate = sorted[searchIndex];
-        if (!(candidate.deposit || candidate.withdrawal)) {
+        if (isAmountRecord(candidate)) {
           previousAmountRecord = candidate;
           break;
         }
@@ -65,16 +99,16 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
       
       for (let i = previousIndex + 1; i < index; i++) {
         const intermediateRecord = sorted[i];
-        if (intermediateRecord.deposit) {
-          totalDeposits += intermediateRecord.deposit;
+        if (intermediateRecord.type === RecordType.DEPOSIT && intermediateRecord.value) {
+          totalDeposits += intermediateRecord.value;
         }
-        if (intermediateRecord.withdrawal) {
-          totalWithdrawals += intermediateRecord.withdrawal;
+        if (intermediateRecord.type === RecordType.WITHDRAWAL && intermediateRecord.value) {
+          totalWithdrawals += intermediateRecord.value;
         }
       }
       
-      const deposit = record.deposit || 0;
-      const withdrawal = record.withdrawal || 0;
+      const deposit = record.type === RecordType.DEPOSIT ? (record.value || 0) : 0;
+      const withdrawal = record.type === RecordType.WITHDRAWAL ? (record.value || 0) : 0;
       totalDeposits += deposit;
       totalWithdrawals += withdrawal;
       
@@ -83,7 +117,7 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
       
       return { ...record, dailyYield };
     });
-  }, [records]);
+  }, [records, initialAmount, getAllRecords]);
 
   const getPreviousDayAmount = (day: number, currentRecord: DailyRecord): number => {
     const sorted = [...records].sort((a, b) => {
@@ -108,16 +142,16 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
     const day = parseInt(record.date.split('-')[2]);
     setEditingDay(day);
     
-    if (record.deposit || record.withdrawal) {
+    if (isDepositOrWithdrawal(record)) {
       setEditValue('');
-      if (record.deposit) {
-        const depositStr = Math.round(record.deposit * 100).toString();
+      if (record.type === RecordType.DEPOSIT && record.value) {
+        const depositStr = Math.round(record.value * 100).toString();
         setEditDeposit(formatCurrencyInput(depositStr));
       } else {
         setEditDeposit('');
       }
-      if (record.withdrawal) {
-        const withdrawalStr = Math.round(record.withdrawal * 100).toString();
+      if (record.type === RecordType.WITHDRAWAL && record.value) {
+        const withdrawalStr = Math.round(record.value * 100).toString();
         setEditWithdrawal(formatCurrencyInput(withdrawalStr));
       } else {
         setEditWithdrawal('');
@@ -201,7 +235,7 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
           const day = parseInt(record.date.split('-')[2]);
           const recordId = `${record.date}-${record.timestamp || 0}`;
           const isEditing = editingRecordId === recordId;
-          const isDepositOrWithdrawal = !!(record.deposit || record.withdrawal);
+          const isDepositOrWithdrawalRecord = isDepositOrWithdrawal(record);
           const isPositive = record.dailyYield > 0;
           const isNegative = record.dailyYield < 0;
           const isFirst = record.dailyYield === 0 && recordsWithYield[0].date === record.date;
@@ -213,15 +247,15 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
             >
               <div className="flex items-start gap-3 flex-1">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
-                  record.deposit 
+                  record.type === RecordType.DEPOSIT
                     ? 'bg-primary/10 text-primary' 
-                    : record.withdrawal 
+                    : record.type === RecordType.WITHDRAWAL
                       ? 'bg-destructive/10 text-destructive' 
                       : 'bg-muted text-muted-foreground'
                 }`}>
-                  {record.deposit ? (
+                  {record.type === RecordType.DEPOSIT ? (
                     <ArrowUpCircle className="h-5 w-5" />
-                  ) : record.withdrawal ? (
+                  ) : record.type === RecordType.WITHDRAWAL ? (
                     <ArrowDownCircle className="h-5 w-5" />
                   ) : (
                     <Wallet className="h-5 w-5" />
@@ -231,9 +265,9 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
                 <div className="flex-1">
                   {isEditing ? (
                     <div className="flex flex-col gap-2 w-full">
-                      {record.deposit || record.withdrawal ? (
+                      {isDepositOrWithdrawal(record) ? (
                         <>
-                          {record.deposit && (
+                          {record.type === RecordType.DEPOSIT && (
                             <div className="flex items-center gap-2">
                               <span className="text-muted-foreground text-sm text-primary">Aporte: R$</span>
                               <Input
@@ -251,7 +285,7 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
                               />
                             </div>
                           )}
-                          {record.withdrawal && (
+                          {record.type === RecordType.WITHDRAWAL && (
                             <div className="flex items-center gap-2">
                               <span className="text-muted-foreground text-sm text-destructive">Saque: R$</span>
                               <Input
@@ -307,17 +341,17 @@ export const RecordsTable = ({ records, onUpdate, onDelete }: RecordsTableProps)
                       <span className="text-xs text-muted-foreground mt-0.5">
                         Dia {String(day).padStart(2, '0')}
                       </span>
-                      {(record.deposit || record.withdrawal) && (
+                      {isDepositOrWithdrawal(record) && (
                         <div className="flex items-center gap-2 text-xs mt-1">
-                          {record.deposit && (
-                            <span className="text-primary">+{formatCurrency(record.deposit)}</span>
+                          {record.type === RecordType.DEPOSIT && record.value && (
+                            <span className="text-primary">+{formatCurrency(record.value)}</span>
                           )}
-                          {record.withdrawal && (
-                            <span className="text-destructive">-{formatCurrency(record.withdrawal)}</span>
+                          {record.type === RecordType.WITHDRAWAL && record.value && (
+                            <span className="text-destructive">-{formatCurrency(record.value)}</span>
                           )}
                         </div>
                       )}
-                      {!isEditing && !isDepositOrWithdrawal && (
+                      {!isEditing && !isDepositOrWithdrawalRecord && (
                         <div className={`flex items-center gap-1 text-xs mt-1 ${
                           isFirst 
                             ? 'text-muted-foreground' 
