@@ -196,8 +196,12 @@ const Index = () => {
       </footer>
 
       {!loading && initialAmount === undefined && (
-        <InitialAmountDialog open={true} onSave={handleSetInitialAmount} />
+        <InitialAmountDialog 
+          open={true} 
+          onSave={handleSetInitialAmount} 
+        />
       )}
+
     </div>
   );
 };
