@@ -1,4 +1,6 @@
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatCurrency, getMonthName } from '@/utils/formatters';
 
 interface YieldCardProps {
@@ -7,16 +9,46 @@ interface YieldCardProps {
   lastDay: number | null;
   currentAmount: number | null;
   month: number;
+  year: number;
+  onMonthChange: (year: number, month: number) => void;
 }
 
-export const YieldCard = ({ yieldValue, firstDay, lastDay, currentAmount, month }: YieldCardProps) => {
+export const YieldCard = ({ yieldValue, firstDay, lastDay, currentAmount, month, year, onMonthChange }: YieldCardProps) => {
   const isPositive = yieldValue !== null && yieldValue > 0;
   const isNegative = yieldValue !== null && yieldValue < 0;
+  
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+  const isCurrentMonth = year === currentYear && month === currentMonth;
+
+  const goToCurrentMonth = () => {
+    onMonthChange(currentYear, currentMonth);
+  };
   
   return (
     <div className="bg-card rounded-xl p-6 shadow-sm border border-border space-y-4">
       {/* Current Amount */}
-      <div className="text-center pb-4 border-b border-border">
+      <div className="relative text-center pb-4 border-b border-border">
+        {!isCurrentMonth && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={goToCurrentMonth}
+                  className="absolute top-0 right-0 h-7 w-7 rounded-md hover:bg-accent"
+                >
+                  <Calendar className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Voltar para o mês atual</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
         <p className="text-sm text-muted-foreground mb-1">Montante Atual</p>
         <p className="text-3xl font-bold text-foreground">
           {currentAmount !== null ? formatCurrency(currentAmount) : '—'}
