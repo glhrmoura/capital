@@ -10,17 +10,62 @@ import { formatCurrency } from '@/utils/formatters';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 
 const Settings = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { initialAmount, setInitialAmount } = useInvestmentData();
-  const { user } = useAuth();
+  const { user, updateDisplayName } = useAuth();
+  const { toast } = useToast();
   const [isEditInitialAmountOpen, setIsEditInitialAmountOpen] = useState(false);
+  const [isEditNameOpen, setIsEditNameOpen] = useState(false);
+  const [nameValue, setNameValue] = useState('');
 
   const handleSetInitialAmount = (amount: number) => {
     setInitialAmount(amount);
     setIsEditInitialAmountOpen(false);
+  };
+
+  const handleEditName = () => {
+    if (user?.displayName) {
+      setNameValue(user.displayName);
+    }
+    setIsEditNameOpen(true);
+  };
+
+  const handleSaveName = async () => {
+    if (!nameValue.trim()) {
+      toast({
+        title: 'Erro',
+        description: 'O nome não pode estar vazio',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      await updateDisplayName(nameValue.trim());
+      setIsEditNameOpen(false);
+      toast({
+        title: 'Sucesso',
+        description: 'Nome atualizado com sucesso',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível atualizar o nome',
+        variant: 'destructive',
+      });
+    }
   };
 
   const getInitials = (name: string | null | undefined) => {
@@ -84,11 +129,20 @@ const Settings = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Nome</label>
-              <div className="text-sm text-muted-foreground">
-                {user?.displayName || 'Não informado'}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5 flex-1">
+                <label className="text-sm font-medium">Nome</label>
+                <div className="text-sm text-muted-foreground">
+                  {user?.displayName || 'Não informado'}
+                </div>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleEditName}
+              >
+                Editar
+              </Button>
             </div>
             <Separator />
             <div className="space-y-2">
@@ -183,6 +237,45 @@ const Settings = () => {
         initialValue={initialAmount}
         onSave={handleSetInitialAmount}
       />
+
+      <Dialog open={isEditNameOpen} onOpenChange={setIsEditNameOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Nome</DialogTitle>
+            <DialogDescription>
+              Altere o nome exibido no seu perfil
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSaveName();
+            }}
+            className="space-y-4"
+          >
+            <Input
+              type="text"
+              placeholder="Seu nome"
+              value={nameValue}
+              onChange={(e) => setNameValue(e.target.value)}
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => setIsEditNameOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" className="flex-1" disabled={!nameValue.trim()}>
+                Salvar
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
