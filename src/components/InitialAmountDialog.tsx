@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,32 +8,64 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { formatCurrencyInput, parseCurrencyInput } from '@/utils/formatters';
+import { formatCurrencyInput, parseCurrencyInput, formatCurrency } from '@/utils/formatters';
 
 interface InitialAmountDialogProps {
   open: boolean;
+  onOpenChange?: (open: boolean) => void;
+  initialValue?: number;
   onSave: (amount: number) => void;
 }
 
-export const InitialAmountDialog = ({ open, onSave }: InitialAmountDialogProps) => {
+export const InitialAmountDialog = ({ open, onOpenChange, initialValue, onSave }: InitialAmountDialogProps) => {
   const [value, setValue] = useState<string>('');
+
+  useEffect(() => {
+    if (open && initialValue !== undefined) {
+      const cents = Math.round(initialValue * 100).toString();
+      const formatted = formatCurrencyInput(cents);
+      setValue(formatted);
+    } else if (open) {
+      setValue('');
+    }
+  }, [open, initialValue]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const numericValue = parseCurrencyInput(value);
     if (numericValue > 0) {
       onSave(numericValue);
-      setValue('');
+      if (onOpenChange) {
+        onOpenChange(false);
+      }
+      if (initialValue === undefined) {
+        setValue('');
+      }
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(newOpen);
+    }
+  };
+
+  const isEditMode = initialValue !== undefined;
+
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
+    <Dialog open={open} onOpenChange={isEditMode ? handleOpenChange : () => {}}>
+      <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => {
+        if (!isEditMode) {
+          e.preventDefault();
+        }
+      }}>
         <DialogHeader>
-          <DialogTitle>Definir Montante Inicial</DialogTitle>
+          <DialogTitle>{isEditMode ? 'Editar Montante Inicial' : 'Definir Montante Inicial'}</DialogTitle>
           <DialogDescription>
-            Informe o valor inicial do seu investimento para começar a acompanhar seus rendimentos.
+            {isEditMode 
+              ? 'Altere o valor inicial do seu investimento.'
+              : 'Informe o valor inicial do seu investimento para começar a acompanhar seus rendimentos.'
+            }
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -54,9 +86,21 @@ export const InitialAmountDialog = ({ open, onSave }: InitialAmountDialogProps) 
               autoFocus
             />
           </div>
-          <Button type="submit" className="w-full" disabled={!value || parseCurrencyInput(value) <= 0}>
-            Salvar
-          </Button>
+          <div className="flex gap-2">
+            {isEditMode && (
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => handleOpenChange(false)}
+              >
+                Cancelar
+              </Button>
+            )}
+            <Button type="submit" className={isEditMode ? "flex-1" : "w-full"} disabled={!value || parseCurrencyInput(value) <= 0}>
+              Salvar
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
