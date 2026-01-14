@@ -10,16 +10,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { getDaysInMonth, formatCurrencyInput, parseCurrencyInput, formatCurrency } from '@/utils/formatters';
-import { DailyRecord } from '@/types/investment';
+import { DailyRecord, RecordType } from '@/types/investment';
 
 interface DailyRecordFormProps {
   year: number;
   month: number;
   existingRecords: DailyRecord[];
+  initialAmount?: number;
   onSubmit: (day: number, amount: number, deposit?: number, withdrawal?: number) => void;
 }
 
-export const DailyRecordForm = ({ year, month, existingRecords, onSubmit }: DailyRecordFormProps) => {
+export const DailyRecordForm = ({ year, month, existingRecords, initialAmount, onSubmit }: DailyRecordFormProps) => {
   const today = new Date();
   const currentDay = today.getDate();
   const currentMonth = today.getMonth();
@@ -29,7 +30,7 @@ export const DailyRecordForm = ({ year, month, existingRecords, onSubmit }: Dail
   const defaultDay = isCurrentMonth ? String(currentDay) : '';
   
   const [selectedDay, setSelectedDay] = useState<string>(defaultDay);
-  const [recordType, setRecordType] = useState<string>('amount');
+  const [recordType, setRecordType] = useState<RecordType>(RecordType.AMOUNT);
   const [value, setValue] = useState<string>('');
 
   const daysInMonth = getDaysInMonth(year, month);
@@ -57,14 +58,14 @@ export const DailyRecordForm = ({ year, month, existingRecords, onSubmit }: Dail
 
   const getPreviousDayAmount = (day: number): number => {
     const selectedDayNum = parseInt(selectedDay);
-    if (!selectedDayNum || sortedRecords.length === 0) return 0;
+    if (!selectedDayNum) return initialAmount || 0;
 
     const allPreviousRecords = sortedRecords.filter(r => {
       const recordDay = parseInt(r.date.split('-')[2]);
       return recordDay <= selectedDayNum;
     });
 
-    if (allPreviousRecords.length === 0) return 0;
+    if (allPreviousRecords.length === 0) return initialAmount || 0;
     
     return allPreviousRecords[allPreviousRecords.length - 1].totalAmount;
   };
@@ -73,9 +74,9 @@ export const DailyRecordForm = ({ year, month, existingRecords, onSubmit }: Dail
     const numericValue = parseCurrencyInput(value);
     const previousAmount = getPreviousDayAmount(parseInt(selectedDay));
 
-    if (recordType === 'deposit') {
+    if (recordType === RecordType.DEPOSIT) {
       return previousAmount + numericValue;
-    } else if (recordType === 'withdrawal') {
+    } else if (recordType === RecordType.WITHDRAWAL) {
       return previousAmount - numericValue;
     }
     return numericValue;
@@ -90,12 +91,12 @@ export const DailyRecordForm = ({ year, month, existingRecords, onSubmit }: Dail
     if (!day || isNaN(numericValue) || numericValue < 0) return;
 
     const calculatedAmount = calculateAmount();
-    const deposit = recordType === 'deposit' ? numericValue : undefined;
-    const withdrawal = recordType === 'withdrawal' ? numericValue : undefined;
+    const deposit = recordType === RecordType.DEPOSIT ? numericValue : undefined;
+    const withdrawal = recordType === RecordType.WITHDRAWAL ? numericValue : undefined;
     
     onSubmit(day, calculatedAmount, deposit, withdrawal);
     setSelectedDay('');
-    setRecordType('amount');
+    setRecordType(RecordType.AMOUNT);
     setValue('');
   };
 
@@ -124,14 +125,14 @@ export const DailyRecordForm = ({ year, month, existingRecords, onSubmit }: Dail
             </SelectContent>
           </Select>
 
-          <Select value={recordType} onValueChange={setRecordType}>
+          <Select value={recordType} onValueChange={(value) => setRecordType(value as RecordType)}>
             <SelectTrigger className="flex-1">
               <SelectValue placeholder="Tipo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="amount">Montante</SelectItem>
-              <SelectItem value="deposit">Aporte</SelectItem>
-              <SelectItem value="withdrawal">Saque</SelectItem>
+              <SelectItem value={RecordType.AMOUNT}>Montante</SelectItem>
+              <SelectItem value={RecordType.DEPOSIT}>Aporte</SelectItem>
+              <SelectItem value={RecordType.WITHDRAWAL}>Saque</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -144,9 +145,9 @@ export const DailyRecordForm = ({ year, month, existingRecords, onSubmit }: Dail
             type="text"
             inputMode="decimal"
             placeholder={
-              recordType === 'amount' 
+              recordType === RecordType.AMOUNT
                 ? 'Valor do montante' 
-                : recordType === 'deposit' 
+                : recordType === RecordType.DEPOSIT
                   ? 'Valor do aporte' 
                   : 'Valor do saque'
             }
@@ -159,7 +160,7 @@ export const DailyRecordForm = ({ year, month, existingRecords, onSubmit }: Dail
           />
         </div>
 
-        {calculatedAmount !== null && (recordType === 'deposit' || recordType === 'withdrawal') && (
+        {calculatedAmount !== null && (recordType === RecordType.DEPOSIT || recordType === RecordType.WITHDRAWAL) && (
           <div className="bg-muted/50 rounded-lg p-3 text-sm">
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">
