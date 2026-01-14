@@ -27,28 +27,73 @@ export const BiometricAuth = ({ onAuthenticated }: BiometricAuthProps) => {
 
     try {
       if (isWebAuthnSupported()) {
-        const credential = await navigator.credentials.get({
-          publicKey: {
+        const credentialId = sessionStorage.getItem('biometricCredentialId');
+        
+        if (credentialId) {
+          const credentialIdBuffer = Uint8Array.from(atob(credentialId), c => c.charCodeAt(0));
+          
+          const getOptions: PublicKeyCredentialRequestOptions = {
             challenge: crypto.getRandomValues(new Uint8Array(32)),
-            allowCredentials: [],
+            allowCredentials: [{
+              id: credentialIdBuffer,
+              type: 'public-key',
+            }],
             userVerification: 'required',
             timeout: 60000,
-          } as PublicKeyCredentialRequestOptions,
-        });
+          };
 
-        if (credential) {
-          sessionStorage.setItem('biometricAuthenticated', 'true');
-          onAuthenticated();
-          return;
+          const assertion = await navigator.credentials.get({
+            publicKey: getOptions,
+          });
+
+          if (assertion) {
+            sessionStorage.setItem('biometricAuthenticated', 'true');
+            onAuthenticated();
+            return;
+          }
+        } else {
+          const userId = new Uint8Array(16);
+          crypto.getRandomValues(userId);
+          const userIdBase64 = btoa(String.fromCharCode(...userId));
+
+          const createOptions: PublicKeyCredentialCreationOptions = {
+            challenge: crypto.getRandomValues(new Uint8Array(32)),
+            rp: {
+              name: 'Capital',
+              id: window.location.hostname,
+            },
+            user: {
+              id: userId,
+              name: 'user@capital.app',
+              displayName: 'Capital User',
+            },
+            pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+            authenticatorSelection: {
+              authenticatorAttachment: 'platform',
+              userVerification: 'required',
+            },
+            timeout: 60000,
+          };
+
+          const credential = await navigator.credentials.create({
+            publicKey: createOptions,
+          }) as PublicKeyCredential | null;
+
+          if (credential) {
+            sessionStorage.setItem('biometricCredentialId', userIdBase64);
+            sessionStorage.setItem('biometricAuthenticated', 'true');
+            onAuthenticated();
+            return;
+          }
         }
-      } else {
-        sessionStorage.setItem('biometricAuthenticated', 'true');
-        onAuthenticated();
       }
+      
+      sessionStorage.setItem('biometricAuthenticated', 'true');
+      onAuthenticated();
     } catch (err: any) {
       if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
         setError('Autenticação cancelada');
-      } else if (err.name === 'NotSupportedError') {
+      } else if (err.name === 'NotSupportedError' || err.name === 'InvalidStateError') {
         sessionStorage.setItem('biometricAuthenticated', 'true');
         onAuthenticated();
       } else {
@@ -64,10 +109,44 @@ export const BiometricAuth = ({ onAuthenticated }: BiometricAuthProps) => {
     if (!isIOS()) {
       sessionStorage.setItem('biometricAuthenticated', 'true');
       onAuthenticated();
+      return;
+    }
+
+    const wasAuthenticated = sessionStorage.getItem('biometricAuthenticated');
+    const credentialId = sessionStorage.getItem('biometricCredentialId');
+
+    if (wasAuthenticated === 'true' && credentialId && isWebAuthnSupported()) {
+      try {
+        const credentialIdBuffer = Uint8Array.from(atob(credentialId), c => c.charCodeAt(0));
+        
+        const getOptions: PublicKeyCredentialRequestOptions = {
+          challenge: crypto.getRandomValues(new Uint8Array(32)),
+          allowCredentials: [{
+            id: credentialIdBuffer,
+            type: 'public-key',
+          }],
+          userVerification: 'required',
+          timeout: 60000,
+        };
+
+        navigator.credentials.get({
+          publicKey: getOptions,
+        }).then((assertion) => {
+          if (assertion) {
+            onAuthenticated();
+          }
+        }).catch(() => {
+          sessionStorage.removeItem('biometricAuthenticated');
+          sessionStorage.removeItem('biometricCredentialId');
+        });
+      } catch {
+        sessionStorage.removeItem('biometricAuthenticated');
+        sessionStorage.removeItem('biometricCredentialId');
+      }
     }
   }, [onAuthenticated]);
 
-  if (!isIOS() || !isWebAuthnSupported()) {
+  if (!isIOS()) {
     return null;
   }
 
