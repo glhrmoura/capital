@@ -9,6 +9,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   updateDisplayName: (displayName: string) => Promise<void>;
+  updatePhotoURL: (photoURL: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,8 +47,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updatePhotoURL = async (photoURL: string) => {
+    if (!user) {
+      throw new Error('User is not authenticated');
+    }
+    try {
+      await updateProfile(user, { photoURL });
+    } catch (error) {
+      console.error('Error updating photo URL:', error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user: user ?? null, loading, signInWithGoogle, logout, updateDisplayName }}>
+    <AuthContext.Provider value={{ user: user ?? null, loading, signInWithGoogle, logout, updateDisplayName, updatePhotoURL }}>
       {children}
     </AuthContext.Provider>
   );
