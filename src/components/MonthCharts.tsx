@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import { DailyRecord } from '@/types/investment';
+import { DailyRecord, isAmountRecord, isDepositOrWithdrawal, RecordType } from '@/types/investment';
 import { formatCurrency } from '@/utils/formatters';
 
 interface TooltipProps {
@@ -70,6 +70,8 @@ interface MonthChartsProps {
   records: DailyRecord[];
   year: number;
   month: number;
+  initialAmount?: number;
+  getAllRecords: () => DailyRecord[];
 }
 
 const getWorkingDaysInMonth = (year: number, month: number): number => {
@@ -114,7 +116,7 @@ const getWorkingDaysUntilToday = (year: number, month: number): number => {
   return workingDays;
 };
 
-export const MonthCharts = ({ records, year, month }: MonthChartsProps) => {
+export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords }: MonthChartsProps) => {
   const chartData = useMemo(() => {
     const sorted = [...records].sort((a, b) => {
       const dateCompare = a.date.localeCompare(b.date);
@@ -122,23 +124,53 @@ export const MonthCharts = ({ records, year, month }: MonthChartsProps) => {
       return (a.timestamp || 0) - (b.timestamp || 0);
     });
     
-    const firstAmountRecordIndex = sorted.findIndex(r => !(r.deposit || r.withdrawal));
+    const allRecords = getAllRecords();
+    const allSortedRecords = [...allRecords].sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) return dateCompare;
+      return (a.timestamp || 0) - (b.timestamp || 0);
+    });
+    
+    const firstAmountRecordIndex = sorted.findIndex(isAmountRecord);
     
     return sorted.map((record, index) => {
       const day = parseInt(record.date.split('-')[2]);
-      const isDepositOrWithdrawal = !!(record.deposit || record.withdrawal);
+      const isDepositOrWithdrawalRecord = isDepositOrWithdrawal(record);
       let dailyYield = 0;
       
-      if (!isDepositOrWithdrawal) {
+      if (!isDepositOrWithdrawalRecord) {
         if (index === firstAmountRecordIndex) {
-          dailyYield = 0;
+          const allAmountRecords = allSortedRecords.filter(isAmountRecord);
+          const isFirstRecordGlobal = allAmountRecords.length > 0 && 
+            allAmountRecords[0].date === record.date && 
+            (allAmountRecords[0].timestamp || 0) === (record.timestamp || 0);
+          
+          if (isFirstRecordGlobal && initialAmount !== undefined) {
+            let totalDeposits = 0;
+            let totalWithdrawals = 0;
+            
+            for (let i = 0; i < index; i++) {
+              const intermediateRecord = sorted[i];
+              if (intermediateRecord.type === RecordType.DEPOSIT && intermediateRecord.value) {
+                totalDeposits += intermediateRecord.value;
+              }
+              if (intermediateRecord.type === RecordType.WITHDRAWAL && intermediateRecord.value) {
+                totalWithdrawals += intermediateRecord.value;
+              }
+            }
+            
+            const totalVariation = record.totalAmount - initialAmount;
+            dailyYield = totalVariation - (totalDeposits - totalWithdrawals);
+          } else {
+            dailyYield = 0;
+          }
         } else {
           let previousAmountRecord: DailyRecord | null = null;
           let searchIndex = index - 1;
           
           while (searchIndex >= 0) {
             const candidate = sorted[searchIndex];
-            if (!(candidate.deposit || candidate.withdrawal)) {
+            if (isAmountRecord(candidate)) {
               previousAmountRecord = candidate;
               break;
             }
@@ -154,20 +186,20 @@ export const MonthCharts = ({ records, year, month }: MonthChartsProps) => {
             let totalDeposits = 0;
             let totalWithdrawals = 0;
             
-            for (let i = previousIndex + 1; i < index; i++) {
-              const intermediateRecord = sorted[i];
-              if (intermediateRecord.deposit) {
-                totalDeposits += intermediateRecord.deposit;
-              }
-              if (intermediateRecord.withdrawal) {
-                totalWithdrawals += intermediateRecord.withdrawal;
-              }
+          for (let i = previousIndex + 1; i < index; i++) {
+            const intermediateRecord = sorted[i];
+            if (intermediateRecord.type === RecordType.DEPOSIT && intermediateRecord.value) {
+              totalDeposits += intermediateRecord.value;
             }
-            
-            const deposit = record.deposit || 0;
-            const withdrawal = record.withdrawal || 0;
-            totalDeposits += deposit;
-            totalWithdrawals += withdrawal;
+            if (intermediateRecord.type === RecordType.WITHDRAWAL && intermediateRecord.value) {
+              totalWithdrawals += intermediateRecord.value;
+            }
+          }
+          
+          const deposit = record.type === RecordType.DEPOSIT ? (record.value || 0) : 0;
+          const withdrawal = record.type === RecordType.WITHDRAWAL ? (record.value || 0) : 0;
+          totalDeposits += deposit;
+          totalWithdrawals += withdrawal;
             
             const totalVariation = record.totalAmount - previousAmountRecord.totalAmount;
             dailyYield = totalVariation - (totalDeposits - totalWithdrawals);
@@ -181,7 +213,7 @@ export const MonthCharts = ({ records, year, month }: MonthChartsProps) => {
         rendimento: dailyYield,
       };
     });
-  }, [records]);
+  }, [records, initialAmount, getAllRecords]);
 
   if (records.length === 0) {
     return (
