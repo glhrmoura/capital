@@ -215,19 +215,6 @@ export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords
     });
   }, [records, initialAmount, getAllRecords]);
 
-  if (records.length === 0) {
-    return (
-      <div className="bg-card rounded-xl p-8 shadow-sm border border-border text-center">
-        <p className="text-muted-foreground">
-          Nenhum registro para exibir gráficos.
-        </p>
-        <p className="text-sm text-muted-foreground mt-1">
-          Adicione registros na aba "Registros".
-        </p>
-      </div>
-    );
-  }
-
   const dailyYieldData = useMemo(() => {
     return chartData.filter(entry => {
       const day = parseInt(entry.day);
@@ -250,6 +237,19 @@ export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords
     return Array.from(uniqueDays).filter(day => isWorkingDay(year, month, day)).length;
   }, [chartData, year, month]);
 
+  if (records.length === 0) {
+    return (
+      <div className="bg-card rounded-xl p-8 shadow-sm border border-border text-center">
+        <p className="text-muted-foreground">
+          Nenhum registro para exibir gráficos.
+        </p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Adicione registros na aba "Registros".
+        </p>
+      </div>
+    );
+  }
+
   const totalWorkingDays = getWorkingDaysInMonth(year, month);
   const workingDaysUntilToday = getWorkingDaysUntilToday(year, month);
   const remainingWorkingDays = Math.max(0, totalWorkingDays - workingDaysUntilToday);
@@ -259,7 +259,6 @@ export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords
 
   return (
     <div className="space-y-4">
-      {/* Stats Summary */}
       <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
         <h3 className="text-sm font-medium text-muted-foreground mb-3">
           Estatísticas do Mês
@@ -279,7 +278,6 @@ export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords
         </div>
       </div>
 
-      {/* Evolution Chart */}
       <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
         <h3 className="text-sm font-medium text-muted-foreground mb-4">
           Evolução do Montante
@@ -312,7 +310,6 @@ export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords
         </div>
       </div>
 
-      {/* Daily Yield Chart */}
       <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
         <h3 className="text-sm font-medium text-muted-foreground mb-4">
           Rendimento Diário
