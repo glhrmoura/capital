@@ -204,10 +204,14 @@ export const MonthCharts = ({ records, year, month }: MonthChartsProps) => {
   }, [chartData, year, month]);
 
   const totalYield = useMemo(() => {
-    return chartData.length > 1 
-      ? chartData.slice(1).reduce((sum, d) => sum + d.rendimento, 0)
+    const workingDaysData = chartData.filter(entry => {
+      const day = parseInt(entry.day);
+      return isWorkingDay(year, month, day);
+    });
+    return workingDaysData.length > 1 
+      ? workingDaysData.slice(1).reduce((sum, d) => sum + d.rendimento, 0)
       : 0;
-  }, [chartData]);
+  }, [chartData, year, month]);
 
   const workingDaysPassed = useMemo(() => {
     const uniqueDays = new Set(chartData.map(d => parseInt(d.day)));
@@ -230,15 +234,6 @@ export const MonthCharts = ({ records, year, month }: MonthChartsProps) => {
         </h3>
         <div className="grid grid-cols-2 gap-4">
           <StatItem
-            label="Dias úteis restantes"
-            value={remainingWorkingDays}
-            isCount
-          />
-          <StatItem
-            label="Rendimento total"
-            value={totalYield}
-          />
-          <StatItem
             label="Média diária"
             value={workingDaysUntilToday > 0 
               ? totalYield / workingDaysUntilToday
@@ -246,8 +241,8 @@ export const MonthCharts = ({ records, year, month }: MonthChartsProps) => {
             }
           />
           <StatItem
-            label="Previsão até fim do mês"
-            value={projectedTotalYield}
+            label="Rendimento total"
+            value={totalYield}
           />
         </div>
       </div>
