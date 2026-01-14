@@ -48,7 +48,7 @@ export const YieldCard = ({ yieldValue, firstDay, lastDay, currentAmount, month,
             </Tooltip>
           </TooltipProvider>
         )}
-        <p className="text-sm text-muted-foreground mb-1">Montante Atual</p>
+        <p className="text-sm text-muted-foreground mb-1">Total Investido</p>
         <p className="text-3xl font-bold text-foreground">
           {currentAmount !== null ? formatCurrency(currentAmount) : '—'}
         </p>
