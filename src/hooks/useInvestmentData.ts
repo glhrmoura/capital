@@ -10,7 +10,7 @@ export const useInvestmentData = () => {
   const userId = user?.uid;
 
   const userDocRef = userId ? doc(db, 'users', userId) : undefined;
-  const [data] = useDocumentData<{ data: MonthlyData }>(userDocRef, {
+  const [data, loading] = useDocumentData<{ data: MonthlyData }>(userDocRef, {
     snapshotListenOptions: { includeMetadataChanges: true },
   });
 
@@ -23,6 +23,14 @@ export const useInvestmentData = () => {
   const getRecordsForMonth = useCallback((year: number, month: number): DailyRecord[] => {
     const key = getMonthKey(year, month);
     return investmentData[key] || [];
+  }, [investmentData]);
+
+  const getAllRecords = useCallback((): DailyRecord[] => {
+    const allRecords: DailyRecord[] = [];
+    Object.values(investmentData).forEach(monthRecords => {
+      allRecords.push(...monthRecords);
+    });
+    return allRecords;
   }, [investmentData]);
 
   const addOrUpdateRecord = useCallback(async (year: number, month: number, day: number, amount: number, deposit?: number, withdrawal?: number, timestamp?: number) => {
@@ -164,7 +172,9 @@ export const useInvestmentData = () => {
   }, []);
 
   return {
+    loading,
     getRecordsForMonth,
+    getAllRecords,
     addOrUpdateRecord,
     deleteRecord,
     calculateYield,
