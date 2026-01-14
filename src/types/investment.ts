@@ -5,15 +5,15 @@ export enum RecordType {
 }
 
 export interface DailyRecord {
-  date: string; // YYYY-MM-DD
+  date: string;
   totalAmount: number;
   type: RecordType;
-  value?: number; // Valor da entrada ou saída (quando type é DEPOSIT ou WITHDRAWAL)
-  timestamp?: number; // Timestamp para diferenciar registros no mesmo dia
+  value?: number;
+  timestamp?: number;
 }
 
 export interface MonthlyData {
-  [key: string]: DailyRecord[]; // key = YYYY-MM
+  [key: string]: DailyRecord[];
 }
 
 export interface UserData {
