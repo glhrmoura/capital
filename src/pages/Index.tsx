@@ -11,13 +11,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useInvestmentData } from '@/hooks/useInvestmentData';
+import { DailyRecord } from '@/types/investment';
 
 const Index = () => {
   const today = new Date();
   const [selectedYear, setSelectedYear] = useState(today.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth());
 
-  const { loading, getRecordsForMonth, getAllRecords, addOrUpdateRecord, deleteRecord, calculateYield } = useInvestmentData();
+  const { loading, investmentData, getRecordsForMonth, getAllRecords, addOrUpdateRecord, deleteRecord, calculateYield } = useInvestmentData();
 
   const records = useMemo(
     () => getRecordsForMonth(selectedYear, selectedMonth),
@@ -30,16 +31,21 @@ const Index = () => {
   );
 
   const currentAmount = useMemo(() => {
-    const allRecords = getAllRecords();
-    const amountRecords = allRecords.filter(r => !(r.deposit || r.withdrawal));
-    if (amountRecords.length === 0) return null;
-    const sortedRecords = [...amountRecords].sort((a, b) => {
+    const allRecords: DailyRecord[] = [];
+    Object.values(investmentData).forEach(monthRecords => {
+      allRecords.push(...monthRecords);
+    });
+    
+    if (allRecords.length === 0) return null;
+    
+    const sortedRecords = [...allRecords].sort((a, b) => {
       const dateCompare = b.date.localeCompare(a.date);
       if (dateCompare !== 0) return dateCompare;
       return (b.timestamp || 0) - (a.timestamp || 0);
     });
+    
     return sortedRecords[0].totalAmount;
-  }, [getAllRecords]);
+  }, [investmentData]);
 
   const handleMonthChange = (year: number, month: number) => {
     setSelectedYear(year);
