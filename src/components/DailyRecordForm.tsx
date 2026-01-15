@@ -109,7 +109,7 @@ export const DailyRecordForm = ({ year, month, existingRecords, initialAmount, o
       
       <div className="space-y-3">
         <div className="flex gap-3">
-          <Select value={selectedDay} onValueChange={setSelectedDay}>
+          <Select value={selectedDay} onValueChange={setSelectedDay} modal={false}>
             <SelectTrigger className="w-32">
               <SelectValue placeholder="Dia" />
             </SelectTrigger>
@@ -125,7 +125,7 @@ export const DailyRecordForm = ({ year, month, existingRecords, initialAmount, o
             </SelectContent>
           </Select>
 
-          <Select value={recordType} onValueChange={(value) => setRecordType(value as RecordType)}>
+          <Select value={recordType} onValueChange={(value) => setRecordType(value as RecordType)} modal={false}>
             <SelectTrigger className="flex-1">
               <SelectValue placeholder="Tipo" />
             </SelectTrigger>
