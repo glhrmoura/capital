@@ -164,9 +164,35 @@ export const useInvestmentData = () => {
       allAmountRecords[0].date === firstRecord.date && 
       (allAmountRecords[0].timestamp || 0) === (firstRecord.timestamp || 0);
     
-    const baseAmount = isFirstRecordGlobal && initialAmount !== undefined 
-      ? initialAmount 
-      : firstRecord.totalAmount;
+    const firstRecordDate = firstRecord.date;
+    const firstRecordTimestamp = firstRecord.timestamp || 0;
+    
+    const previousAmountRecords = allAmountRecords.filter(r => {
+      const dateCompare = r.date.localeCompare(firstRecordDate);
+      if (dateCompare < 0) return true;
+      if (dateCompare === 0) {
+        return (r.timestamp || 0) < firstRecordTimestamp;
+      }
+      return false;
+    });
+    
+    let baseAmount: number;
+    let lastPreviousAmountRecord: DailyRecord | null = null;
+    
+    if (isFirstRecordGlobal && initialAmount !== undefined) {
+      baseAmount = initialAmount;
+    } else if (isFirstRecordGlobal) {
+      baseAmount = firstRecord.totalAmount;
+    } else {
+      if (previousAmountRecords.length > 0) {
+        lastPreviousAmountRecord = previousAmountRecords[previousAmountRecords.length - 1];
+        baseAmount = lastPreviousAmountRecord.totalAmount;
+      } else if (initialAmount !== undefined) {
+        baseAmount = initialAmount;
+      } else {
+        baseAmount = firstRecord.totalAmount;
+      }
+    }
     
     const firstRecordIndex = sortedRecords.findIndex(r => 
       r.date === firstRecord.date && 
@@ -198,6 +224,52 @@ export const useInvestmentData = () => {
         }
         if (record.type === RecordType.WITHDRAWAL && record.value) {
           totalWithdrawals += record.value;
+        }
+      }
+    } else if (!isFirstRecordGlobal) {
+      if (lastPreviousAmountRecord) {
+        const lastPreviousDate = lastPreviousAmountRecord.date;
+        const lastPreviousTimestamp = lastPreviousAmountRecord.timestamp || 0;
+        
+        const recordsBetween = allSortedRecords.filter(r => {
+          const dateCompare = r.date.localeCompare(lastPreviousDate);
+          if (dateCompare < 0) return false;
+          if (dateCompare === 0) {
+            return (r.timestamp || 0) > lastPreviousTimestamp;
+          }
+          const firstDateCompare = r.date.localeCompare(firstRecordDate);
+          if (firstDateCompare < 0) return true;
+          if (firstDateCompare === 0) {
+            return (r.timestamp || 0) < firstRecordTimestamp;
+          }
+          return false;
+        });
+        
+        for (const record of recordsBetween) {
+          if (record.type === RecordType.DEPOSIT && record.value) {
+            totalDeposits += record.value;
+          }
+          if (record.type === RecordType.WITHDRAWAL && record.value) {
+            totalWithdrawals += record.value;
+          }
+        }
+      } else if (initialAmount !== undefined) {
+        const recordsBeforeFirst = allSortedRecords.filter(r => {
+          const dateCompare = r.date.localeCompare(firstRecordDate);
+          if (dateCompare < 0) return true;
+          if (dateCompare === 0) {
+            return (r.timestamp || 0) < firstRecordTimestamp;
+          }
+          return false;
+        });
+        
+        for (const record of recordsBeforeFirst) {
+          if (record.type === RecordType.DEPOSIT && record.value) {
+            totalDeposits += record.value;
+          }
+          if (record.type === RecordType.WITHDRAWAL && record.value) {
+            totalWithdrawals += record.value;
+          }
         }
       }
     }
