@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DailyRecord, isAmountRecord, isDepositOrWithdrawal, RecordType } from '@/types/investment';
 import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from '@/utils/formatters';
+import { useTranslation } from 'react-i18next';
 
 interface RecordsTableProps {
   records: DailyRecord[];
@@ -14,6 +15,7 @@ interface RecordsTableProps {
 }
 
 export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, onDelete }: RecordsTableProps) => {
+  const { t } = useTranslation();
   const [editingDay, setEditingDay] = useState<number | null>(null);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
@@ -224,10 +226,10 @@ export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, 
     return (
       <div className="bg-card rounded-xl p-8 shadow-sm border border-border text-center">
         <p className="text-muted-foreground">
-          Nenhum registro para este mês.
+          {t('records.noRecordsThisMonth')}
         </p>
         <p className="text-sm text-muted-foreground mt-1">
-          Adicione seu primeiro registro acima.
+          {t('records.addFirstRecord')}
         </p>
       </div>
     );
@@ -237,14 +239,14 @@ export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, 
     <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <h3 className="text-sm font-medium text-muted-foreground">
-          Registros
+          {t('records.title')}
         </h3>
         <Button
           variant="ghost"
           size="icon"
           className="h-8 w-8"
           onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-          title={sortOrder === 'desc' ? 'Mais recente primeiro' : 'Mais antigo primeiro'}
+          title={sortOrder === 'desc' ? t('records.newestFirst') : t('records.oldestFirst')}
         >
           <ArrowUpDown className="h-4 w-4" />
         </Button>
@@ -290,7 +292,7 @@ export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, 
                         <>
                           {record.type === RecordType.DEPOSIT && (
                             <div className="flex items-center gap-2">
-                              <span className="text-muted-foreground text-sm text-primary">Entrada: R$</span>
+                              <span className="text-muted-foreground text-sm text-primary">{t('records.depositLabel')}</span>
                               <Input
                                 type="text"
                                 inputMode="decimal"
@@ -308,7 +310,7 @@ export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, 
                           )}
                           {record.type === RecordType.WITHDRAWAL && (
                             <div className="flex items-center gap-2">
-                              <span className="text-muted-foreground text-sm text-destructive">Saída: R$</span>
+                              <span className="text-muted-foreground text-sm text-destructive">{t('records.withdrawalLabel')}</span>
                               <Input
                                 type="text"
                                 inputMode="decimal"
@@ -325,7 +327,7 @@ export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, 
                             </div>
                           )}
                           <div className="text-xs text-muted-foreground mt-1">
-                            Montante: {formatCurrency(
+                            {t('records.amountLabel')} {formatCurrency(
                               (() => {
                                 const previousAmount = getPreviousDayAmount(day, record);
                                 const deposit = editDeposit ? parseCurrencyInput(editDeposit) : 0;
@@ -348,7 +350,7 @@ export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, 
                             }}
                             onKeyDown={handleKeyDown}
                             className="w-32 h-8"
-                            placeholder="Total"
+                            placeholder={t('records.total')}
                             autoFocus
                           />
                         </div>
@@ -360,7 +362,7 @@ export const RecordsTable = ({ records, initialAmount, getAllRecords, onUpdate, 
                         {formatCurrency(record.totalAmount)}
                       </span>
                       <span className="text-xs text-muted-foreground mt-0.5">
-                        Dia {String(day).padStart(2, '0')}
+                        {t('records.dayLabel')} {String(day).padStart(2, '0')}
                       </span>
                       {isDepositOrWithdrawal(record) && (
                         <div className="flex items-center gap-2 text-xs mt-1">

@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { getDaysInMonth, formatCurrencyInput, parseCurrencyInput, formatCurrency } from '@/utils/formatters';
 import { DailyRecord, RecordType } from '@/types/investment';
+import { useTranslation } from 'react-i18next';
 
 interface DailyRecordFormProps {
   year: number;
@@ -21,6 +22,7 @@ interface DailyRecordFormProps {
 }
 
 export const DailyRecordForm = ({ year, month, existingRecords, initialAmount, onSubmit }: DailyRecordFormProps) => {
+  const { t } = useTranslation();
   const today = new Date();
   const currentDay = today.getDate();
   const currentMonth = today.getMonth();
@@ -90,12 +92,12 @@ export const DailyRecordForm = ({ year, month, existingRecords, initialAmount, o
     const numericValue = parseCurrencyInput(value);
     
     if (!day) {
-      setError('Selecione um dia');
+      setError(t('records.selectDayError'));
       return;
     }
 
     if (isNaN(numericValue) || numericValue <= 0) {
-      setError('O valor deve ser maior que zero');
+      setError(t('records.valueZeroError'));
       return;
     }
 
@@ -115,13 +117,13 @@ export const DailyRecordForm = ({ year, month, existingRecords, initialAmount, o
 
   return (
     <form onSubmit={handleSubmit} className="bg-card rounded-xl p-4 shadow-sm border border-border">
-      <h3 className="text-sm font-medium text-muted-foreground mb-3">Adicionar Registro</h3>
+      <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('records.addRecord')}</h3>
       
       <div className="space-y-3">
         <div className="flex gap-3">
           <Select value={selectedDay} onValueChange={setSelectedDay} modal={false}>
             <SelectTrigger className="w-32">
-              <SelectValue placeholder="Dia" />
+              <SelectValue placeholder={t('records.day')} />
             </SelectTrigger>
             <SelectContent>
               {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => (
@@ -137,12 +139,12 @@ export const DailyRecordForm = ({ year, month, existingRecords, initialAmount, o
 
           <Select value={recordType} onValueChange={(value) => setRecordType(value as RecordType)} modal={false}>
             <SelectTrigger className="flex-1">
-              <SelectValue placeholder="Tipo" />
+              <SelectValue placeholder={t('records.type')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={RecordType.AMOUNT}>Montante</SelectItem>
-              <SelectItem value={RecordType.DEPOSIT}>Entrada</SelectItem>
-              <SelectItem value={RecordType.WITHDRAWAL}>Saída</SelectItem>
+              <SelectItem value={RecordType.AMOUNT}>{t('records.amount')}</SelectItem>
+              <SelectItem value={RecordType.DEPOSIT}>{t('records.deposit')}</SelectItem>
+              <SelectItem value={RecordType.WITHDRAWAL}>{t('records.withdrawal')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -174,14 +176,14 @@ export const DailyRecordForm = ({ year, month, existingRecords, initialAmount, o
           <div className="bg-muted/50 rounded-lg p-3 text-sm">
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">
-                {previousAmount > 0 ? 'Montante anterior:' : 'Sem registro anterior'}
+                {previousAmount > 0 ? t('records.previousAmount') : t('records.noPreviousRecord')}
               </span>
               <span className="font-medium">
                 {formatCurrency(previousAmount)}
               </span>
             </div>
             <div className="flex justify-between items-center mt-2 pt-2 border-t border-border">
-              <span className="text-muted-foreground">Novo montante:</span>
+              <span className="text-muted-foreground">{t('records.newAmount')}</span>
               <span className="font-semibold text-primary">
                 {formatCurrency(calculatedAmount)}
               </span>
@@ -191,7 +193,7 @@ export const DailyRecordForm = ({ year, month, existingRecords, initialAmount, o
         
         <Button type="submit" className="w-full">
           <Plus className="h-4 w-4 mr-2" />
-          Adicionar
+          {t('common.add')}
         </Button>
       </div>
     </form>
