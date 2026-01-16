@@ -9,14 +9,16 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { UserMenu } from '@/components/UserMenu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
 import { useInvestmentData } from '@/hooks/useInvestmentData';
 import { DailyRecord } from '@/types/investment';
 import { InitialAmountDialog } from '@/components/InitialAmountDialog';
 import { useTranslation } from 'react-i18next';
+import { BottomNav } from '@/components/BottomNav';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const today = new Date();
   const [selectedYear, setSelectedYear] = useState(today.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth());
@@ -99,7 +101,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 pt-24 pb-6 space-y-4">
+      <main className="max-w-lg mx-auto px-4 pt-24 space-y-4" style={{ paddingBottom: isMobile ? '5rem' : '1.5rem' }}>
         <MonthSelector
           year={selectedYear}
           month={selectedMonth}
@@ -132,10 +134,12 @@ const Index = () => {
 
         {loading ? (
           <div className="space-y-4">
-            <div className="flex gap-2">
-              <Skeleton className="h-10 w-20 rounded-md" />
-              <Skeleton className="h-10 flex-1 rounded-md" />
-            </div>
+            {!isMobile && (
+              <div className="flex gap-2">
+                <Skeleton className="h-10 w-20 rounded-md" />
+                <Skeleton className="h-10 flex-1 rounded-md" />
+              </div>
+            )}
             <div className="bg-card rounded-xl p-4 shadow-sm border border-border space-y-3">
               <Skeleton className="h-4 w-32" />
               <Skeleton className="h-10 w-full rounded-md" />
@@ -146,6 +150,24 @@ const Index = () => {
               <Skeleton className="h-20 w-full rounded-lg" />
               <Skeleton className="h-20 w-full rounded-lg" />
             </div>
+          </div>
+        ) : isMobile ? (
+          <div className="space-y-4">
+            <DailyRecordForm
+              year={selectedYear}
+              month={selectedMonth}
+              existingRecords={records}
+              initialAmount={initialAmount}
+              onSubmit={handleAddRecord}
+            />
+
+            <RecordsTable
+              records={records}
+              initialAmount={initialAmount}
+              getAllRecords={getAllRecords}
+              onUpdate={handleUpdateRecord}
+              onDelete={handleDeleteRecord}
+            />
           </div>
         ) : (
           <Tabs defaultValue="registros" className="w-full">
@@ -191,10 +213,6 @@ const Index = () => {
         )}
       </main>
 
-      <footer className="text-center py-4 text-xs text-muted-foreground">
-        Capital © {new Date().getFullYear()}
-      </footer>
-
       {!loading && initialAmount === undefined && (
         <InitialAmountDialog 
           open={true} 
@@ -202,6 +220,7 @@ const Index = () => {
         />
       )}
 
+      <BottomNav />
     </div>
   );
 };
