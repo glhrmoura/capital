@@ -7,7 +7,7 @@
 
 ## Capital
 
-PWA application to manage your investments simply and efficiently. Track your daily investment records, view charts and analysis of your returns, and calculate monthly yields automatically. All data is synchronized in the cloud with Firebase.
+Application to manage your investments simply and efficiently. Track your daily investment records, view charts and analysis of your returns, and calculate monthly yields automatically. All data is synchronized in the cloud with Firebase.
 
 ### Demo
 
