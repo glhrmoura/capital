@@ -1,11 +1,14 @@
-import { Home, BarChart3, Settings } from 'lucide-react';
+import { Home, BarChart3 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 export const BottomNav = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -16,24 +19,37 @@ export const BottomNav = () => {
   const isCharts = location.pathname === '/charts';
   const isSettings = location.pathname === '/settings';
 
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   const navItems = [
     {
       icon: Home,
       label: t('common.home'),
       path: '/',
       active: isHome,
+      showAvatar: false,
     },
     {
       icon: BarChart3,
       label: t('charts.title'),
       path: '/charts',
       active: isCharts,
+      showAvatar: false,
     },
     {
-      icon: Settings,
+      icon: null,
       label: t('settings.title'),
       path: '/settings',
       active: isSettings,
+      showAvatar: true,
     },
   ];
 
@@ -54,7 +70,14 @@ export const BottomNav = () => {
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                <Icon className={cn('h-5 w-5', item.active && 'scale-110')} />
+                {item.showAvatar ? (
+                  <Avatar className={cn('h-6 w-6', item.active && 'ring-2 ring-primary ring-offset-2 ring-offset-background')}>
+                    <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || t('settings.profile.name')} />
+                    <AvatarFallback className="text-[10px]">{getInitials(user?.displayName)}</AvatarFallback>
+                  </Avatar>
+                ) : Icon ? (
+                  <Icon className={cn('h-5 w-5', item.active && 'scale-110')} />
+                ) : null}
                 <span className={cn(
                   'text-xs font-medium',
                   item.active && 'font-semibold'
