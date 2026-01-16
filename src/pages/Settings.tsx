@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Moon, Sun, Wallet, User, Camera, Languages } from 'lucide-react';
+import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from 'next-themes';
@@ -162,7 +163,7 @@ const Settings = () => {
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 pt-24 pb-6 space-y-4">
+      <main className="max-w-lg mx-auto px-4 pt-24 pb-20 space-y-4">
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
@@ -434,6 +435,8 @@ const Settings = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      <BottomNav />
     </div>
   );
 };
