@@ -1,0 +1,139 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "close": "Close",
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "app": {
+    "name": "Capital",
+    "subtitle": "Track your returns"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your preferences",
+    "profile": {
+      "title": "Profile",
+      "description": "Your account information",
+      "name": "Name",
+      "email": "Email",
+      "notInformed": "Not informed",
+      "editName": "Edit Name",
+      "editNameDescription": "Change the name displayed on your profile",
+      "namePlaceholder": "Your name",
+      "nameEmptyError": "Name cannot be empty",
+      "nameUpdateSuccess": "Name updated successfully",
+      "nameUpdateError": "Could not update name",
+      "editPhoto": "Edit Photo",
+      "editPhotoDescription": "Enter the image URL for your profile photo",
+      "photoURLPlaceholder": "https://example.com/photo.jpg",
+      "photoURLEmptyError": "URL cannot be empty",
+      "photoURLInvalidError": "Please enter a valid URL",
+      "photoUpdateSuccess": "Photo updated successfully",
+      "photoUpdateError": "Could not update photo"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "description": "Choose the application theme",
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "language": {
+      "title": "Language",
+      "description": "Choose the application language",
+      "portuguese": "Português",
+      "english": "English"
+    },
+    "investments": {
+      "title": "Investments",
+      "description": "Configure your investments",
+      "initialAmount": "Initial Investment",
+      "notDefined": "Not defined",
+      "define": "Define"
+    }
+  },
+  "records": {
+    "title": "Records",
+    "addRecord": "Add Record",
+    "day": "Day",
+    "type": "Type",
+    "amount": "Amount",
+    "deposit": "Deposit",
+    "withdrawal": "Withdrawal",
+    "value": "Value",
+    "selectDayError": "Select a day",
+    "valueZeroError": "Value must be greater than zero",
+    "previousAmount": "Previous amount:",
+    "noPreviousRecord": "No previous record",
+    "newAmount": "New amount:",
+    "date": "Date",
+    "yield": "Yield",
+    "actions": "Actions",
+    "noRecords": "No records found",
+    "noRecordsThisMonth": "No records for this month.",
+    "addFirstRecord": "Add your first record above.",
+    "newestFirst": "Newest first",
+    "oldestFirst": "Oldest first",
+    "depositLabel": "Deposit: $",
+    "withdrawalLabel": "Withdrawal: $",
+    "amountLabel": "Amount:",
+    "dayLabel": "Day",
+    "total": "Total"
+  },
+  "charts": {
+    "title": "Charts",
+    "dailyYield": "Daily Yield",
+    "totalYield": "Total Yield",
+    "workingDays": "Working Days",
+    "monthStats": "Month Statistics",
+    "dailyAverage": "Daily average",
+    "amountEvolution": "Amount Evolution",
+    "dayLabel": "Day"
+  },
+  "yield": {
+    "monthly": "Monthly Yield",
+    "currentAmount": "Current Amount",
+    "noData": "No data",
+    "totalInvested": "Total Invested",
+    "monthlyYield": "Monthly Yield",
+    "backToCurrentMonth": "Back to current month",
+    "yielded": "yielded",
+    "untilDay": "until day",
+    "addTwoDaysMessage": "Add at least 2 days to calculate yield"
+  },
+  "initialAmount": {
+    "title": "Initial Investment",
+    "editTitle": "Edit Initial Investment",
+    "defineTitle": "Set Initial Investment",
+    "description": "Set the initial value of your investment",
+    "editDescription": "Change the initial value of your investment.",
+    "defineDescription": "Enter the initial value of your investment to start tracking your returns.",
+    "placeholder": "0.00"
+  },
+  "monthSelector": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
+  },
+  "userMenu": {
+    "settings": "Settings",
+    "logout": "Logout"
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "add": "Adicionar",
+    "close": "Fechar",
+    "back": "Voltar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso"
+  },
+  "app": {
+    "name": "Capital",
+    "subtitle": "Acompanhe seus rendimentos"
+  },
+  "settings": {
+    "title": "Configurações",
+    "subtitle": "Gerencie suas preferências",
+    "profile": {
+      "title": "Perfil",
+      "description": "Informações da sua conta",
+      "name": "Nome",
+      "email": "Email",
+      "notInformed": "Não informado",
+      "editName": "Editar Nome",
+      "editNameDescription": "Altere o nome exibido no seu perfil",
+      "namePlaceholder": "Seu nome",
+      "nameEmptyError": "O nome não pode estar vazio",
+      "nameUpdateSuccess": "Nome atualizado com sucesso",
+      "nameUpdateError": "Não foi possível atualizar o nome",
+      "editPhoto": "Editar Foto",
+      "editPhotoDescription": "Insira a URL da imagem para sua foto de perfil",
+      "photoURLPlaceholder": "https://exemplo.com/foto.jpg",
+      "photoURLEmptyError": "A URL não pode estar vazia",
+      "photoURLInvalidError": "Por favor, insira uma URL válida",
+      "photoUpdateSuccess": "Foto atualizada com sucesso",
+      "photoUpdateError": "Não foi possível atualizar a foto"
+    },
+    "appearance": {
+      "title": "Aparência",
+      "description": "Escolha o tema da aplicação",
+      "theme": "Tema",
+      "light": "Claro",
+      "dark": "Escuro",
+      "system": "Sistema"
+    },
+    "language": {
+      "title": "Idioma",
+      "description": "Escolha o idioma da aplicação",
+      "portuguese": "Português",
+      "english": "English"
+    },
+    "investments": {
+      "title": "Investimentos",
+      "description": "Configure seus investimentos",
+      "initialAmount": "Investimento Inicial",
+      "notDefined": "Não definido",
+      "define": "Definir"
+    }
+  },
+  "records": {
+    "title": "Registros",
+    "addRecord": "Adicionar Registro",
+    "day": "Dia",
+    "type": "Tipo",
+    "amount": "Montante",
+    "deposit": "Entrada",
+    "withdrawal": "Saída",
+    "value": "Valor",
+    "selectDayError": "Selecione um dia",
+    "valueZeroError": "O valor deve ser maior que zero",
+    "previousAmount": "Montante anterior:",
+    "noPreviousRecord": "Sem registro anterior",
+    "newAmount": "Novo montante:",
+    "date": "Data",
+    "yield": "Rendimento",
+    "actions": "Ações",
+    "noRecords": "Nenhum registro encontrado",
+    "noRecordsThisMonth": "Nenhum registro para este mês.",
+    "addFirstRecord": "Adicione seu primeiro registro acima.",
+    "newestFirst": "Mais recente primeiro",
+    "oldestFirst": "Mais antigo primeiro",
+    "depositLabel": "Entrada: R$",
+    "withdrawalLabel": "Saída: R$",
+    "amountLabel": "Montante:",
+    "dayLabel": "Dia",
+    "total": "Total"
+  },
+  "charts": {
+    "title": "Gráficos",
+    "dailyYield": "Rendimento Diário",
+    "totalYield": "Rendimento Total",
+    "workingDays": "Dias Úteis",
+    "monthStats": "Estatísticas do Mês",
+    "dailyAverage": "Média diária",
+    "amountEvolution": "Evolução do Montante",
+    "dayLabel": "Dia"
+  },
+  "yield": {
+    "monthly": "Rendimento Mensal",
+    "currentAmount": "Montante Atual",
+    "noData": "Sem dados",
+    "totalInvested": "Total Investido",
+    "monthlyYield": "Rendimento do Mês",
+    "backToCurrentMonth": "Voltar para o mês atual",
+    "yielded": "rendeu",
+    "untilDay": "até o dia",
+    "addTwoDaysMessage": "Adicione pelo menos 2 dias para calcular o rendimento"
+  },
+  "initialAmount": {
+    "title": "Investimento Inicial",
+    "editTitle": "Editar Investimento Inicial",
+    "defineTitle": "Definir Investimento Inicial",
+    "description": "Defina o valor inicial do seu investimento",
+    "editDescription": "Altere o valor inicial do seu investimento.",
+    "defineDescription": "Informe o valor inicial do seu investimento para começar a acompanhar seus rendimentos.",
+    "placeholder": "0,00"
+  },
+  "monthSelector": {
+    "january": "Janeiro",
+    "february": "Fevereiro",
+    "march": "Março",
+    "april": "Abril",
+    "may": "Maio",
+    "june": "Junho",
+    "july": "Julho",
+    "august": "Agosto",
+    "september": "Setembro",
+    "october": "Outubro",
+    "november": "Novembro",
+    "december": "Dezembro"
+  },
+  "userMenu": {
+    "settings": "Configurações",
+    "logout": "Sair"
+  }
+}
