@@ -55,8 +55,8 @@ export const BottomNav = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border safe-area-bottom">
-      <div className="max-w-lg mx-auto">
-        <div className="flex items-center justify-around h-16">
+      <div className="max-w-lg mx-auto" style={{ paddingBottom: `calc(0.5rem + env(safe-area-inset-bottom))`, paddingTop: '0.5rem' }}>
+        <div className="flex items-center justify-around h-14">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
