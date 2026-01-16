@@ -1,7 +1,26 @@
 import { TrendingUp, TrendingDown, Minus, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { formatCurrency, getMonthName } from '@/utils/formatters';
+import { formatCurrency } from '@/utils/formatters';
+import { useTranslation } from 'react-i18next';
+
+const getMonthName = (month: number, t: (key: string) => string): string => {
+  const months = [
+    t('monthSelector.january'),
+    t('monthSelector.february'),
+    t('monthSelector.march'),
+    t('monthSelector.april'),
+    t('monthSelector.may'),
+    t('monthSelector.june'),
+    t('monthSelector.july'),
+    t('monthSelector.august'),
+    t('monthSelector.september'),
+    t('monthSelector.october'),
+    t('monthSelector.november'),
+    t('monthSelector.december'),
+  ];
+  return months[month];
+};
 
 interface YieldCardProps {
   yieldValue: number | null;
@@ -14,6 +33,7 @@ interface YieldCardProps {
 }
 
 export const YieldCard = ({ yieldValue, firstDay, lastDay, currentAmount, month, year, onMonthChange }: YieldCardProps) => {
+  const { t } = useTranslation();
   const isPositive = yieldValue !== null && yieldValue > 0;
   const isNegative = yieldValue !== null && yieldValue < 0;
   
@@ -43,19 +63,19 @@ export const YieldCard = ({ yieldValue, firstDay, lastDay, currentAmount, month,
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Voltar para o mês atual</p>
+                <p>{t('yield.backToCurrentMonth')}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         )}
-        <p className="text-sm text-muted-foreground mb-1">Total Investido</p>
+        <p className="text-sm text-muted-foreground mb-1">{t('yield.totalInvested')}</p>
         <p className="text-3xl font-bold text-foreground">
           {currentAmount !== null ? formatCurrency(currentAmount) : '—'}
         </p>
       </div>
       
       <div className="text-center">
-        <p className="text-sm text-muted-foreground mb-2">Rendimento do Mês</p>
+        <p className="text-sm text-muted-foreground mb-2">{t('yield.monthlyYield')}</p>
         
         {yieldValue !== null ? (
           <>
@@ -79,18 +99,18 @@ export const YieldCard = ({ yieldValue, firstDay, lastDay, currentAmount, month,
             </div>
             
             <p className="mt-3 text-sm text-muted-foreground">
-              {getMonthName(month)} rendeu{' '}
+              {getMonthName(month, t)} {t('yield.yielded')}{' '}
               <span className={isPositive ? 'text-primary font-medium' : isNegative ? 'text-destructive font-medium' : ''}>
                 {formatCurrency(Math.abs(yieldValue))}
               </span>
-              {' '}até o dia {lastDay}
+              {' '}{t('yield.untilDay')} {lastDay}
             </p>
           </>
         ) : (
           <div className="text-muted-foreground">
             <Minus className="h-5 w-5 mx-auto mb-2" />
             <p className="text-sm">
-              Adicione pelo menos 2 dias para calcular o rendimento
+              {t('yield.addTwoDaysMessage')}
             </p>
           </div>
         )}
