@@ -13,8 +13,10 @@ import { Button } from '@/components/ui/button';
 import { useInvestmentData } from '@/hooks/useInvestmentData';
 import { DailyRecord } from '@/types/investment';
 import { InitialAmountDialog } from '@/components/InitialAmountDialog';
+import { useTranslation } from 'react-i18next';
 
 const Index = () => {
+  const { t } = useTranslation();
   const today = new Date();
   const [selectedYear, setSelectedYear] = useState(today.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth());
@@ -82,10 +84,10 @@ const Index = () => {
               />
               <div>
                 <h1 className="text-lg font-semibold text-foreground">
-                  Capital
+                  {t('app.name')}
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  Acompanhe seus rendimentos
+                  {t('app.subtitle')}
                 </p>
               </div>
             </div>
@@ -150,11 +152,11 @@ const Index = () => {
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="registros" className="flex items-center gap-2">
                 <List className="h-4 w-4" />
-                Registros
+                {t('records.title')}
               </TabsTrigger>
               <TabsTrigger value="graficos" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
-                Gráficos
+                {t('charts.title')}
               </TabsTrigger>
             </TabsList>
 
