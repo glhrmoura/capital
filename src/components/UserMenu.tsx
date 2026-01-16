@@ -11,8 +11,10 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, User, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export const UserMenu = () => {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -41,7 +43,7 @@ export const UserMenu = () => {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'Usuário'} />
+            <AvatarImage src={user.photoURL || undefined} alt={user.displayName || t('settings.profile.name')} />
             <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
           </Avatar>
         </Button>
@@ -49,19 +51,19 @@ export const UserMenu = () => {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.displayName || "Usuário"}</p>
+            <p className="text-sm font-medium leading-none">{user.displayName || t('settings.profile.name')}</p>
             <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => navigate('/settings')}>
           <Settings className="mr-2 h-4 w-4" />
-          <span>Configurações</span>
+          <span>{t('userMenu.settings')}</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Sair</span>
+          <span>{t('userMenu.logout')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

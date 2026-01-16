@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatCurrencyInput, parseCurrencyInput, formatCurrency } from '@/utils/formatters';
+import { useTranslation } from 'react-i18next';
 
 interface InitialAmountDialogProps {
   open: boolean;
@@ -18,6 +19,7 @@ interface InitialAmountDialogProps {
 }
 
 export const InitialAmountDialog = ({ open, onOpenChange, initialValue, onSave }: InitialAmountDialogProps) => {
+  const { t } = useTranslation();
   const [value, setValue] = useState<string>('');
 
   useEffect(() => {
@@ -60,11 +62,11 @@ export const InitialAmountDialog = ({ open, onOpenChange, initialValue, onSave }
         }
       }}>
         <DialogHeader>
-          <DialogTitle>{isEditMode ? 'Editar Investimento Inicial' : 'Definir Investimento Inicial'}</DialogTitle>
+          <DialogTitle>{isEditMode ? t('initialAmount.editTitle') : t('initialAmount.defineTitle')}</DialogTitle>
           <DialogDescription>
             {isEditMode 
-              ? 'Altere o valor inicial do seu investimento.'
-              : 'Informe o valor inicial do seu investimento para começar a acompanhar seus rendimentos.'
+              ? t('initialAmount.editDescription')
+              : t('initialAmount.defineDescription')
             }
           </DialogDescription>
         </DialogHeader>
@@ -94,11 +96,11 @@ export const InitialAmountDialog = ({ open, onOpenChange, initialValue, onSave }
                 className="flex-1"
                 onClick={() => handleOpenChange(false)}
               >
-                Cancelar
+                {t('common.cancel')}
               </Button>
             )}
             <Button type="submit" className={isEditMode ? "flex-1" : "w-full"} disabled={!value || parseCurrencyInput(value) <= 0}>
-              Salvar
+              {t('common.save')}
             </Button>
           </div>
         </form>
