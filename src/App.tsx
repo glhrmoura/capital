@@ -10,6 +10,7 @@ import Index from './pages/Index';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 import Settings from './pages/Settings';
+import Charts from './pages/Charts';
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Settings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/charts"
+                element={
+                  <ProtectedRoute>
+                    <Charts />
                   </ProtectedRoute>
                 }
               />
