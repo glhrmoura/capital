@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Moon, Sun, Wallet, User, Camera, Languages } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Wallet, User, Camera, Languages, LogOut } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,7 +29,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { initialAmount, setInitialAmount } = useInvestmentData();
-  const { user, updateDisplayName, updatePhotoURL } = useAuth();
+  const { user, updateDisplayName, updatePhotoURL, logout } = useAuth();
   const { toast } = useToast();
   const [isEditInitialAmountOpen, setIsEditInitialAmountOpen] = useState(false);
   const [isEditNameOpen, setIsEditNameOpen] = useState(false);
@@ -136,6 +136,14 @@ const Settings = () => {
     if (theme === 'dark') return t('settings.appearance.dark');
     if (theme === 'light') return t('settings.appearance.light');
     return t('settings.appearance.system');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return (
@@ -340,6 +348,15 @@ const Settings = () => {
             </div>
           </CardContent>
         </Card>
+
+        <Button
+          variant="destructive"
+          className="w-full"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          {t('userMenu.logout')}
+        </Button>
       </main>
 
       <InitialAmountDialog
