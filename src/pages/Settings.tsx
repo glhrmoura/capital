@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Moon, Sun, Wallet, User, Camera } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Wallet, User, Camera, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from 'next-themes';
@@ -19,8 +19,12 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/hooks/useLanguage';
 
 const Settings = () => {
+  const { t } = useTranslation();
+  const { currentLanguage, changeLanguage } = useLanguage();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { initialAmount, setInitialAmount } = useInvestmentData();
@@ -47,8 +51,8 @@ const Settings = () => {
   const handleSaveName = async () => {
     if (!nameValue.trim()) {
       toast({
-        title: 'Erro',
-        description: 'O nome não pode estar vazio',
+        title: t('common.error'),
+        description: t('settings.profile.nameEmptyError'),
         variant: 'destructive',
       });
       return;
@@ -58,13 +62,13 @@ const Settings = () => {
       await updateDisplayName(nameValue.trim());
       setIsEditNameOpen(false);
       toast({
-        title: 'Sucesso',
-        description: 'Nome atualizado com sucesso',
+        title: t('common.success'),
+        description: t('settings.profile.nameUpdateSuccess'),
       });
     } catch (error) {
       toast({
-        title: 'Erro',
-        description: 'Não foi possível atualizar o nome',
+        title: t('common.error'),
+        description: t('settings.profile.nameUpdateError'),
         variant: 'destructive',
       });
     }
@@ -80,8 +84,8 @@ const Settings = () => {
   const handleSavePhoto = async () => {
     if (!photoURLValue.trim()) {
       toast({
-        title: 'Erro',
-        description: 'A URL não pode estar vazia',
+        title: t('common.error'),
+        description: t('settings.profile.photoURLEmptyError'),
         variant: 'destructive',
       });
       return;
@@ -90,12 +94,12 @@ const Settings = () => {
     try {
       const url = new URL(photoURLValue.trim());
       if (!['http:', 'https:'].includes(url.protocol)) {
-        throw new Error('URL inválida');
+        throw new Error('Invalid URL');
       }
     } catch (error) {
       toast({
-        title: 'Erro',
-        description: 'Por favor, insira uma URL válida',
+        title: t('common.error'),
+        description: t('settings.profile.photoURLInvalidError'),
         variant: 'destructive',
       });
       return;
@@ -105,13 +109,13 @@ const Settings = () => {
       await updatePhotoURL(photoURLValue.trim());
       setIsEditPhotoOpen(false);
       toast({
-        title: 'Sucesso',
-        description: 'Foto atualizada com sucesso',
+        title: t('common.success'),
+        description: t('settings.profile.photoUpdateSuccess'),
       });
     } catch (error) {
       toast({
-        title: 'Erro',
-        description: 'Não foi possível atualizar a foto',
+        title: t('common.error'),
+        description: t('settings.profile.photoUpdateError'),
         variant: 'destructive',
       });
     }
@@ -125,6 +129,12 @@ const Settings = () => {
       .join('')
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const getThemeLabel = () => {
+    if (theme === 'dark') return t('settings.appearance.dark');
+    if (theme === 'light') return t('settings.appearance.light');
+    return t('settings.appearance.system');
   };
 
   return (
@@ -142,10 +152,10 @@ const Settings = () => {
             </Button>
             <div>
               <h1 className="text-lg font-semibold text-foreground">
-                Configurações
+                {t('settings.title')}
               </h1>
               <p className="text-sm text-muted-foreground">
-                Gerencie suas preferências
+                {t('settings.subtitle')}
               </p>
             </div>
           </div>
@@ -158,7 +168,7 @@ const Settings = () => {
             <div className="flex items-center gap-3">
               <div className="relative">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || 'Usuário'} />
+                  <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || t('settings.profile.name')} />
                   <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
                 </Avatar>
                 <Button
@@ -171,7 +181,7 @@ const Settings = () => {
                 </Button>
               </div>
               <div className="flex-1">
-                <CardTitle className="text-lg">{user?.displayName || 'Usuário'}</CardTitle>
+                <CardTitle className="text-lg">{user?.displayName || t('settings.profile.name')}</CardTitle>
                 <CardDescription className="text-sm">{user?.email}</CardDescription>
               </div>
             </div>
@@ -182,18 +192,18 @@ const Settings = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              Perfil
+              {t('settings.profile.title')}
             </CardTitle>
             <CardDescription>
-              Informações da sua conta
+              {t('settings.profile.description')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5 flex-1">
-                <label className="text-sm font-medium">Nome</label>
+                <label className="text-sm font-medium">{t('settings.profile.name')}</label>
                 <div className="text-sm text-muted-foreground">
-                  {user?.displayName || 'Não informado'}
+                  {user?.displayName || t('settings.profile.notInformed')}
                 </div>
               </div>
               <Button
@@ -201,14 +211,14 @@ const Settings = () => {
                 size="sm"
                 onClick={handleEditName}
               >
-                Editar
+                {t('common.edit')}
               </Button>
             </div>
             <Separator />
             <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
+              <label className="text-sm font-medium">{t('settings.profile.email')}</label>
               <div className="text-sm text-muted-foreground">
-                {user?.email || 'Não informado'}
+                {user?.email || t('settings.profile.notInformed')}
               </div>
             </div>
           </CardContent>
@@ -218,18 +228,18 @@ const Settings = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Moon className="h-5 w-5" />
-              Aparência
+              {t('settings.appearance.title')}
             </CardTitle>
             <CardDescription>
-              Escolha o tema da aplicação
+              {t('settings.appearance.description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <label className="text-sm font-medium">Tema</label>
+                <label className="text-sm font-medium">{t('settings.appearance.theme')}</label>
                 <p className="text-sm text-muted-foreground">
-                  {theme === 'dark' ? 'Escuro' : theme === 'light' ? 'Claro' : 'Sistema'}
+                  {getThemeLabel()}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -240,7 +250,7 @@ const Settings = () => {
                   className="h-9"
                 >
                   <Sun className="h-4 w-4 mr-2" />
-                  Claro
+                  {t('settings.appearance.light')}
                 </Button>
                 <Button
                   variant={theme === 'dark' ? 'default' : 'outline'}
@@ -249,7 +259,47 @@ const Settings = () => {
                   className="h-9"
                 >
                   <Moon className="h-4 w-4 mr-2" />
-                  Escuro
+                  {t('settings.appearance.dark')}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Languages className="h-5 w-5" />
+              {t('settings.language.title')}
+            </CardTitle>
+            <CardDescription>
+              {t('settings.language.description')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <label className="text-sm font-medium">{t('settings.language.title')}</label>
+                <p className="text-sm text-muted-foreground">
+                  {currentLanguage === 'pt-BR' ? t('settings.language.portuguese') : t('settings.language.english')}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={currentLanguage === 'pt-BR' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => changeLanguage('pt-BR')}
+                  className="h-9"
+                >
+                  {t('settings.language.portuguese')}
+                </Button>
+                <Button
+                  variant={currentLanguage === 'en' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => changeLanguage('en')}
+                  className="h-9"
+                >
+                  {t('settings.language.english')}
                 </Button>
               </div>
             </div>
@@ -260,21 +310,21 @@ const Settings = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Wallet className="h-5 w-5" />
-              Investimentos
+              {t('settings.investments.title')}
             </CardTitle>
             <CardDescription>
-              Configure seus investimentos
+              {t('settings.investments.description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <label className="text-sm font-medium">Investimento Inicial</label>
+                  <label className="text-sm font-medium">{t('settings.investments.initialAmount')}</label>
                   <p className="text-sm text-muted-foreground">
                     {initialAmount !== undefined 
                       ? formatCurrency(initialAmount)
-                      : 'Não definido'
+                      : t('settings.investments.notDefined')
                     }
                   </p>
                 </div>
@@ -283,7 +333,7 @@ const Settings = () => {
                   size="sm"
                   onClick={() => setIsEditInitialAmountOpen(true)}
                 >
-                  {initialAmount !== undefined ? 'Editar' : 'Definir'}
+                  {initialAmount !== undefined ? t('common.edit') : t('settings.investments.define')}
                 </Button>
               </div>
             </div>
@@ -301,9 +351,9 @@ const Settings = () => {
       <Dialog open={isEditNameOpen} onOpenChange={setIsEditNameOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Editar Nome</DialogTitle>
+            <DialogTitle>{t('settings.profile.editName')}</DialogTitle>
             <DialogDescription>
-              Altere o nome exibido no seu perfil
+              {t('settings.profile.editNameDescription')}
             </DialogDescription>
           </DialogHeader>
           <form
@@ -315,7 +365,7 @@ const Settings = () => {
           >
             <Input
               type="text"
-              placeholder="Seu nome"
+              placeholder={t('settings.profile.namePlaceholder')}
               value={nameValue}
               onChange={(e) => setNameValue(e.target.value)}
               autoFocus
@@ -327,10 +377,10 @@ const Settings = () => {
                 className="flex-1"
                 onClick={() => setIsEditNameOpen(false)}
               >
-                Cancelar
+                {t('common.cancel')}
               </Button>
               <Button type="submit" className="flex-1" disabled={!nameValue.trim()}>
-                Salvar
+                {t('common.save')}
               </Button>
             </div>
           </form>
@@ -340,9 +390,9 @@ const Settings = () => {
       <Dialog open={isEditPhotoOpen} onOpenChange={setIsEditPhotoOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Editar Foto</DialogTitle>
+            <DialogTitle>{t('settings.profile.editPhoto')}</DialogTitle>
             <DialogDescription>
-              Insira a URL da imagem para sua foto de perfil
+              {t('settings.profile.editPhotoDescription')}
             </DialogDescription>
           </DialogHeader>
           <form
@@ -354,7 +404,7 @@ const Settings = () => {
           >
             <Input
               type="url"
-              placeholder="https://exemplo.com/foto.jpg"
+              placeholder={t('settings.profile.photoURLPlaceholder')}
               value={photoURLValue}
               onChange={(e) => setPhotoURLValue(e.target.value)}
               autoFocus
@@ -375,10 +425,10 @@ const Settings = () => {
                 className="flex-1"
                 onClick={() => setIsEditPhotoOpen(false)}
               >
-                Cancelar
+                {t('common.cancel')}
               </Button>
               <Button type="submit" className="flex-1" disabled={!photoURLValue.trim()}>
-                Salvar
+                {t('common.save')}
               </Button>
             </div>
           </form>
