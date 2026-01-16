@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -121,40 +122,54 @@ export const DailyRecordForm = ({ year, month, existingRecords, initialAmount, o
       
       <div className="space-y-3">
         <div className="flex gap-3">
-          <Select value={selectedDay} onValueChange={setSelectedDay} modal={false}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder={t('records.day')} />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => (
-                <SelectItem 
-                  key={day} 
-                  value={String(day)}
-                >
-                  {String(day).padStart(2, '0')}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="w-32">
+            <Label htmlFor="day-select" className="text-sm font-medium mb-1.5 block">
+              {t('records.day')}
+            </Label>
+            <Select value={selectedDay} onValueChange={setSelectedDay} modal={false}>
+              <SelectTrigger id="day-select">
+                <SelectValue placeholder={t('records.day')} />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => (
+                  <SelectItem 
+                    key={day} 
+                    value={String(day)}
+                  >
+                    {String(day).padStart(2, '0')}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-          <Select value={recordType} onValueChange={(value) => setRecordType(value as RecordType)} modal={false}>
-            <SelectTrigger className="flex-1">
-              <SelectValue placeholder={t('records.type')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={RecordType.AMOUNT}>{t('records.amount')}</SelectItem>
-              <SelectItem value={RecordType.DEPOSIT}>{t('records.deposit')}</SelectItem>
-              <SelectItem value={RecordType.WITHDRAWAL}>{t('records.withdrawal')}</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex-1">
+            <Label htmlFor="type-select" className="text-sm font-medium mb-1.5 block">
+              {t('records.type')}
+            </Label>
+            <Select value={recordType} onValueChange={(value) => setRecordType(value as RecordType)} modal={false}>
+              <SelectTrigger id="type-select">
+                <SelectValue placeholder={t('records.type')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={RecordType.AMOUNT}>{t('records.amount')}</SelectItem>
+                <SelectItem value={RecordType.DEPOSIT}>{t('records.deposit')}</SelectItem>
+                <SelectItem value={RecordType.WITHDRAWAL}>{t('records.withdrawal')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div>
+          <Label htmlFor="value-input" className="text-sm font-medium mb-1.5 block">
+            {t('records.value')}
+          </Label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
               R$
             </span>
             <Input
+              id="value-input"
               type="text"
               inputMode="decimal"
               placeholder="0,00"
