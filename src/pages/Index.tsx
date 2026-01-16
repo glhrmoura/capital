@@ -92,9 +92,11 @@ const Index = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <UserMenu />
-            </div>
+            {!isMobile && (
+              <div className="flex items-center gap-2">
+                <UserMenu />
+              </div>
+            )}
           </div>
         </div>
       </header>
