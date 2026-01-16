@@ -1,4 +1,4 @@
-const APP_VERSION = 25;
+const APP_VERSION = 26;
 const CACHE_NAME = `capital-app-v${APP_VERSION}-${Date.now()}`;
 const STATIC_CACHE = `capital-app-static-v${APP_VERSION}`;
 const DYNAMIC_CACHE = `capital-app-dynamic-v${APP_VERSION}`;
