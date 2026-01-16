@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { DailyRecord, isAmountRecord, isDepositOrWithdrawal, RecordType } from '@/types/investment';
 import { formatCurrency } from '@/utils/formatters';
+import { useTranslation } from 'react-i18next';
 
 interface TooltipProps {
   active?: boolean;
@@ -25,13 +26,13 @@ interface TooltipProps {
   label?: string;
 }
 
-const MontanteTooltip = ({ active, payload, label }: TooltipProps) => {
+const MontanteTooltip = ({ active, payload, label, t }: TooltipProps & { t: (key: string) => string }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-card border border-border rounded-lg p-3 shadow-lg z-50">
-        <p className="font-semibold text-foreground mb-2">{`Dia ${label}`}</p>
+        <p className="font-semibold text-foreground mb-2">{`${t('charts.dayLabel')} ${label}`}</p>
         <p className="text-sm">
-          <span className="text-muted-foreground">Montante: </span>
+          <span className="text-muted-foreground">{t('records.amount')}: </span>
           <span className="font-medium text-foreground">
             {formatCurrency(payload[0].value)}
           </span>
@@ -42,7 +43,7 @@ const MontanteTooltip = ({ active, payload, label }: TooltipProps) => {
   return null;
 };
 
-const RendimentoTooltip = ({ active, payload, label }: TooltipProps) => {
+const RendimentoTooltip = ({ active, payload, label, t }: TooltipProps & { t: (key: string) => string }) => {
   if (active && payload && payload.length) {
     const value = payload[0].value;
     const valueColor = value > 0 
@@ -53,9 +54,9 @@ const RendimentoTooltip = ({ active, payload, label }: TooltipProps) => {
     
     return (
       <div className="bg-card border border-border rounded-lg p-3 shadow-lg z-50">
-        <p className="font-semibold text-foreground mb-2">{`Dia ${label}`}</p>
+        <p className="font-semibold text-foreground mb-2">{`${t('charts.dayLabel')} ${label}`}</p>
         <p className="text-sm">
-          <span className="text-muted-foreground">Rendimento: </span>
+          <span className="text-muted-foreground">{t('records.yield')}: </span>
           <span className={`font-medium ${valueColor}`}>
             {formatCurrency(value)}
           </span>
@@ -117,6 +118,7 @@ const getWorkingDaysUntilToday = (year: number, month: number): number => {
 };
 
 export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords }: MonthChartsProps) => {
+  const { t } = useTranslation();
   const chartData = useMemo(() => {
     const sorted = [...records].sort((a, b) => {
       const dateCompare = a.date.localeCompare(b.date);
@@ -261,18 +263,18 @@ export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords
     <div className="space-y-4">
       <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
         <h3 className="text-sm font-medium text-muted-foreground mb-3">
-          Estatísticas do Mês
+          {t('charts.monthStats')}
         </h3>
         <div className="grid grid-cols-2 gap-4">
           <StatItem
-            label="Média diária"
+            label={t('charts.dailyAverage')}
             value={workingDaysUntilToday > 0 
               ? totalYield / workingDaysUntilToday
               : 0
             }
           />
           <StatItem
-            label="Rendimento total"
+            label={t('charts.totalYield')}
             value={totalYield}
           />
         </div>
@@ -280,7 +282,7 @@ export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords
 
       <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
         <h3 className="text-sm font-medium text-muted-foreground mb-4">
-          Evolução do Montante
+          {t('charts.amountEvolution')}
         </h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -296,7 +298,7 @@ export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords
                 tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
                 className="text-muted-foreground"
               />
-              <Tooltip content={<MontanteTooltip />} />
+              <Tooltip content={<MontanteTooltip t={t} />} />
               <Line
                 type="monotone"
                 dataKey="montante"
@@ -312,7 +314,7 @@ export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords
 
       <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
         <h3 className="text-sm font-medium text-muted-foreground mb-4">
-          Rendimento Diário
+          {t('charts.dailyYield')}
         </h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -328,7 +330,7 @@ export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords
                 tickFormatter={(value) => `${value >= 0 ? '+' : ''}${value}`}
                 className="text-muted-foreground"
               />
-              <Tooltip content={<RendimentoTooltip />} />
+              <Tooltip content={<RendimentoTooltip t={t} />} />
               <Bar dataKey="rendimento" radius={[4, 4, 0, 0]}>
                 {dailyYieldData.map((entry, index) => (
                   <Cell
