@@ -5,7 +5,6 @@ import { YieldCard } from '@/components/YieldCard';
 import { DailyRecordForm } from '@/components/DailyRecordForm';
 import { RecordsTable } from '@/components/RecordsTable';
 import { MonthCharts } from '@/components/MonthCharts';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { UserMenu } from '@/components/UserMenu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -94,7 +93,6 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <ThemeToggle />
               <UserMenu />
             </div>
           </div>
