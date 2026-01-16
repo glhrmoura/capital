@@ -32,6 +32,7 @@ export const DailyRecordForm = ({ year, month, existingRecords, initialAmount, o
   const [selectedDay, setSelectedDay] = useState<string>(defaultDay);
   const [recordType, setRecordType] = useState<RecordType>(RecordType.AMOUNT);
   const [value, setValue] = useState<string>('');
+  const [error, setError] = useState<string>('');
 
   const daysInMonth = getDaysInMonth(year, month);
 
@@ -88,8 +89,17 @@ export const DailyRecordForm = ({ year, month, existingRecords, initialAmount, o
     const day = parseInt(selectedDay);
     const numericValue = parseCurrencyInput(value);
     
-    if (!day || isNaN(numericValue) || numericValue < 0) return;
+    if (!day) {
+      setError('Selecione um dia');
+      return;
+    }
 
+    if (isNaN(numericValue) || numericValue <= 0) {
+      setError('O valor deve ser maior que zero');
+      return;
+    }
+
+    setError('');
     const calculatedAmount = calculateAmount();
     const deposit = recordType === RecordType.DEPOSIT ? numericValue : undefined;
     const withdrawal = recordType === RecordType.WITHDRAWAL ? numericValue : undefined;
@@ -137,21 +147,27 @@ export const DailyRecordForm = ({ year, month, existingRecords, initialAmount, o
           </Select>
         </div>
 
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-            R$
-          </span>
-          <Input
-            type="text"
-            inputMode="decimal"
-            placeholder="0,00"
-            value={value}
-            onChange={(e) => {
-              const formatted = formatCurrencyInput(e.target.value);
-              setValue(formatted);
-            }}
-            className="pl-10"
-          />
+        <div>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+              R$
+            </span>
+            <Input
+              type="text"
+              inputMode="decimal"
+              placeholder="0,00"
+              value={value}
+              onChange={(e) => {
+                const formatted = formatCurrencyInput(e.target.value);
+                setValue(formatted);
+                setError('');
+              }}
+              className={`pl-10 ${error ? 'border-destructive' : ''}`}
+            />
+          </div>
+          {error && (
+            <p className="text-sm text-destructive mt-1">{error}</p>
+          )}
         </div>
 
         {calculatedAmount !== null && (recordType === RecordType.DEPOSIT || recordType === RecordType.WITHDRAWAL) && (
