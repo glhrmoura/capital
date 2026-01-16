@@ -108,10 +108,7 @@ export const YieldCard = ({ yieldValue, firstDay, lastDay, currentAmount, month,
           </>
         ) : (
           <div className="text-muted-foreground">
-            <Minus className="h-5 w-5 mx-auto mb-2" />
-            <p className="text-sm">
-              {t('yield.addTwoDaysMessage')}
-            </p>
+            <Minus className="h-5 w-5 mx-auto" />
           </div>
         )}
       </div>
