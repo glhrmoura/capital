@@ -207,6 +207,7 @@ const Index = () => {
                 month={selectedMonth}
                 initialAmount={initialAmount}
                 getAllRecords={getAllRecords}
+                totalYield={yieldData?.yield}
               />
             </TabsContent>
           </Tabs>
