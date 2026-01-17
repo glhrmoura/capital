@@ -117,6 +117,7 @@ const Charts = () => {
             month={selectedMonth}
             initialAmount={initialAmount}
             getAllRecords={getAllRecords}
+            totalYield={yieldData?.yield}
           />
         )}
       </main>
