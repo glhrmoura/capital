@@ -73,6 +73,7 @@ interface MonthChartsProps {
   month: number;
   initialAmount?: number;
   getAllRecords: () => DailyRecord[];
+  totalYield?: number;
 }
 
 const getWorkingDaysInMonth = (year: number, month: number): number => {
@@ -117,7 +118,7 @@ const getWorkingDaysUntilToday = (year: number, month: number): number => {
   return workingDays;
 };
 
-export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords }: MonthChartsProps) => {
+export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords, totalYield: totalYieldProp }: MonthChartsProps) => {
   const { t } = useTranslation();
   const chartData = useMemo(() => {
     const sorted = [...records].sort((a, b) => {
@@ -225,6 +226,9 @@ export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords
   }, [chartData, year, month]);
 
   const totalYield = useMemo(() => {
+    if (totalYieldProp !== undefined) {
+      return totalYieldProp;
+    }
     const workingDaysData = chartData.filter(entry => {
       const day = parseInt(entry.day);
       return isWorkingDay(year, month, day);
@@ -232,7 +236,7 @@ export const MonthCharts = ({ records, year, month, initialAmount, getAllRecords
     return workingDaysData.length > 1 
       ? workingDaysData.slice(1).reduce((sum, d) => sum + d.rendimento, 0)
       : 0;
-  }, [chartData, year, month]);
+  }, [chartData, year, month, totalYieldProp]);
 
   const workingDaysPassed = useMemo(() => {
     const uniqueDays = new Set(chartData.map(d => parseInt(d.day)));
